@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(title)">
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="${title} + ' — GymPro'">GymPro</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏋️</text></svg>"/>
+</head>
+
+<!-- SIDEBAR fragment -->
+<nav th:fragment="sidebar(active)" class="sidebar">
+    <div class="sidebar-brand">
+        <span class="brand-icon">🏋️</span>
+        <h1>GYM<span>PRO</span></h1>
+        <p>Management System</p>
+    </div>
+
+    <div class="nav-section">
+        <div class="nav-section-label">Overview</div>
+        <a th:href="@{/}" class="nav-item" th:classappend="${active=='home'} ? 'active' : ''">
+            <span class="nav-icon">📊</span>
+            <span>Dashboard</span>
+        </a>
+    </div>
+
+    <div class="nav-section">
+        <div class="nav-section-label">Members</div>
+        <a th:href="@{/members/register}" class="nav-item" th:classappend="${active=='register'} ? 'active' : ''">
+            <span class="nav-icon">➕</span>
+            <span>Register Member</span>
+        </a>
+        <a th:href="@{/members/search}" class="nav-item" th:classappend="${active=='search'} ? 'active' : ''">
+            <span class="nav-icon">🔍</span>
+            <span>Search Members</span>
+        </a>
+        <a th:href="@{/members/status}" class="nav-item" th:classappend="${active=='status'} ? 'active' : ''">
+            <span class="nav-icon">🔖</span>
+            <span>Member Status</span>
+        </a>
+    </div>
+
+    <div class="nav-section">
+        <div class="nav-section-label">Memberships</div>
+        <a th:href="@{/memberships/plans}" class="nav-item" th:classappend="${active=='plans'} ? 'active' : ''">
+            <span class="nav-icon">📋</span>
+            <span>Membership Plans</span>
+        </a>
+        <a th:href="@{/subscriptions/assign}" class="nav-item" th:classappend="${active=='assign'} ? 'active' : ''">
+            <span class="nav-icon">🎫</span>
+            <span>Assign Subscription</span>
+        </a>
+    </div>
+
+    <div class="nav-section">
+        <div class="nav-section-label">Classes</div>
+        <a th:href="@{/classes}" class="nav-item" th:classappend="${active=='classes'} ? 'active' : ''">
+            <span class="nav-icon">🏃</span>
+            <span>All Classes</span>
+        </a>
+        <a th:href="@{/classes/create}" class="nav-item" th:classappend="${active=='create-class'} ? 'active' : ''">
+            <span class="nav-icon">📅</span>
+            <span>Create Class</span>
+        </a>
+    </div>
+
+    <div class="nav-section">
+        <div class="nav-section-label">Attendance</div>
+        <a th:href="@{/attendance/mark}" class="nav-item" th:classappend="${active=='attendance'} ? 'active' : ''">
+            <span class="nav-icon">✅</span>
+            <span>Mark Attendance</span>
+        </a>
+    </div>
+
+    <div class="sidebar-footer">
+        <div>GymPro v1.0</div>
+        <div style="margin-top:2px;">© 2025 All rights reserved</div>
+    </div>
+</nav>
+
+<!-- FLASH MESSAGES fragment -->
+<div th:fragment="alerts">
+    <div th:if="${successMessage}" class="alert alert-success">
+        <span>✅</span>
+        <span th:text="${successMessage}"></span>
+    </div>
+    <div th:if="${errorMessage}" class="alert alert-error">
+        <span>❌</span>
+        <span th:text="${errorMessage}"></span>
+    </div>
+    <div th:if="${warningMessage}" class="alert alert-warning">
+        <span>⚠️</span>
+        <span th:text="${warningMessage}"></span>
+    </div>
+</div>
+</html>

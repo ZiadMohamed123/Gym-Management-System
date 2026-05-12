@@ -1,25 +1,144 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<title>Gym Management System</title>
-</head>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Dashboard')}"></head>
 <body>
-	<h1>Gym Management System</h1>
-	<p>View placeholders for the required pages.</p>
-	<ul>
-		<li><a href="/members/register">Member registration</a></li>
-		<li><a href="/members/update">Update member</a></li>
-		<li><a href="/members/profile">Member profile</a></li>
-		<li><a href="/members/search">Search members</a></li>
-		<li><a href="/memberships/plans">Membership plans</a></li>
-		<li><a href="/subscriptions/assign">Assign subscription</a></li>
-		<li><a href="/subscriptions/renew">Renew subscription</a></li>
-		<li><a href="/classes">Available classes</a></li>
-		<li><a href="/classes/create">Create class</a></li>
-		<li><a href="/classes/update">Update or cancel class</a></li>
-		<li><a href="/classes/participants">Class participants</a></li>
-		<li><a href="/attendance/mark">Daily attendance</a></li>
-	</ul>
+
+<div th:replace="~{fragments/layout :: sidebar('home')}"></div>
+
+<div class="main-content">
+    <div class="topbar">
+        <div class="topbar-title">📊 Dashboard</div>
+        <div class="topbar-actions">
+            <a th:href="@{/members/register}" class="btn btn-primary">➕ New Member</a>
+        </div>
+    </div>
+
+    <div class="page-body">
+        <div th:replace="~{fragments/layout :: alerts}"></div>
+
+        <!-- Stats Row -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">👥</div>
+                <div class="stat-value" th:text="${totalMembers}">0</div>
+                <div class="stat-label">Total Members</div>
+            </div>
+            <div class="stat-card green">
+                <div class="stat-icon">✅</div>
+                <div class="stat-value" th:text="${activeMembers}">0</div>
+                <div class="stat-label">Active Members</div>
+            </div>
+            <div class="stat-card blue">
+                <div class="stat-icon">🎫</div>
+                <div class="stat-value" th:text="${activeSubscriptions}">0</div>
+                <div class="stat-label">Active Subscriptions</div>
+            </div>
+            <div class="stat-card orange">
+                <div class="stat-icon">🏃</div>
+                <div class="stat-value" th:text="${totalClasses}">0</div>
+                <div class="stat-label">Total Classes</div>
+            </div>
+            <div class="stat-card red">
+                <div class="stat-icon">📍</div>
+                <div class="stat-value" th:text="${todayVisits}">0</div>
+                <div class="stat-label">Today's Visits</div>
+            </div>
+        </div>
+
+        <div class="grid-2">
+
+            <!-- Recent Members -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">👥 Recent Members</div>
+                    <a th:href="@{/members/search}" class="btn btn-secondary btn-sm">View All</a>
+                </div>
+                <div class="card-body" style="padding:0;">
+                    <div th:if="${#lists.isEmpty(recentMembers)}" class="empty-state" style="padding:40px;">
+                        <div class="empty-icon">👤</div>
+                        <h3>No Members Yet</h3>
+                    </div>
+                    <div class="table-wrapper" th:if="${!#lists.isEmpty(recentMembers)}">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Member ID</th>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="m : ${recentMembers}">
+                                    <td><span class="member-id" th:text="${m.memberId}"></span></td>
+                                    <td th:text="${m.fullName}"></td>
+                                    <td>
+                                        <span th:class="'badge badge-' + ${#strings.toLowerCase(m.accountStatus.name())}"
+                                              th:text="${m.accountStatus}"></span>
+                                    </td>
+                                    <td>
+                                        <a th:href="@{/members/profile/{id}(id=${m.id})}"
+                                           class="btn btn-secondary btn-sm">View</a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upcoming Classes -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">🏃 Upcoming Classes</div>
+                    <a th:href="@{/classes}" class="btn btn-secondary btn-sm">View All</a>
+                </div>
+                <div class="card-body">
+                    <div th:if="${#lists.isEmpty(upcomingClasses)}" class="empty-state" style="padding:20px 0;">
+                        <div class="empty-icon">📅</div>
+                        <h3>No Upcoming Classes</h3>
+                    </div>
+                    <div th:each="c : ${upcomingClasses}" class="class-card" style="margin-bottom:12px;">
+                        <div class="class-card-header">
+                            <div class="class-name" th:text="${c.name}"></div>
+                            <span class="badge badge-info"
+                                  th:text="${c.maxCapacity - c.bookedCount} + ' spots'"></span>
+                        </div>
+                        <div class="class-meta">
+                            <span>📅 <span th:text="${#temporals.format(c.scheduleDateTime, 'EEE, MMM d yyyy')}"></span></span>
+                            <span>🕐 <span th:text="${#temporals.format(c.scheduleDateTime, 'HH:mm')}"></span></span>
+                            <span>👤 <span th:text="${c.createdBy}"></span></span>
+                        </div>
+                        <div class="capacity-bar">
+                            <div class="capacity-fill"
+                                 th:classappend="${c.bookedCount >= c.maxCapacity} ? 'full' : (${c.bookedCount >= c.maxCapacity * 0.8} ? 'near-full' : '')"
+                                 th:style="'width:' + (${c.maxCapacity > 0 ? c.bookedCount * 100 / c.maxCapacity : 0}) + '%'"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">⚡ Quick Actions</div>
+            </div>
+            <div class="card-body">
+                <div style="display:flex;flex-wrap:wrap;gap:12px;">
+                    <a th:href="@{/members/register}"      class="btn btn-primary">➕ Register Member</a>
+                    <a th:href="@{/subscriptions/assign}"  class="btn btn-success">🎫 Assign Subscription</a>
+                    <a th:href="@{/classes/create}"        class="btn btn-secondary">📅 Create Class</a>
+                    <a th:href="@{/attendance/mark}"       class="btn btn-secondary">✅ Mark Attendance</a>
+                    <a th:href="@{/memberships/plans}"     class="btn btn-secondary">📋 Manage Plans</a>
+                    <a th:href="@{/members/status}"        class="btn btn-secondary">🔖 Member Status</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
 </body>
 </html>

@@ -1,11 +1,101 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<title>Available Classes</title>
-</head>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Classes')}"></head>
 <body>
-	<h1>Available Classes</h1>
-	<p>Placeholder view for class list and booking.</p>
+
+<div th:replace="~{fragments/layout :: sidebar('classes')}"></div>
+
+<div class="main-content">
+    <div class="topbar">
+        <div class="topbar-title">🏃 Gym Classes</div>
+        <div class="topbar-actions">
+            <a th:href="@{/classes/create}" class="btn btn-primary">➕ Create Class</a>
+        </div>
+    </div>
+
+    <div class="page-body">
+        <div th:replace="~{fragments/layout :: alerts}"></div>
+
+        <!-- Book a Class (Quick action) -->
+        <div class="card" style="margin-bottom:20px;">
+            <div class="card-header">
+                <div class="card-title">🎫 Quick Book a Class</div>
+            </div>
+            <div class="card-body">
+                <form th:action="@{/classes/book}" method="post" style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+                    <div class="form-group" style="flex:1;min-width:200px;margin:0;">
+                        <label>Select Member</label>
+                        <select name="memberId" required>
+                            <option value="">— Member —</option>
+                            <option th:each="m : ${members}"
+                                    th:value="${m.id}"
+                                    th:text="${m.memberId} + ' — ' + ${m.fullName}"></option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="flex:1;min-width:200px;margin:0;">
+                        <label>Select Class</label>
+                        <select name="classId" required>
+                            <option value="">— Class —</option>
+                            <option th:each="c : ${classes}"
+                                    th:value="${c.id}"
+                                    th:text="${c.name} + ' (' + ${#temporals.format(c.scheduleDateTime,'MMM d HH:mm')} + ')'"></option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-success">🎫 Book</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Classes Grid -->
+        <div th:if="${#lists.isEmpty(classes)}" class="empty-state" style="padding:80px 20px;">
+            <div class="empty-icon">🏃</div>
+            <h3>No Active Classes</h3>
+            <p style="margin-top:8px;">Create your first class to get started.</p>
+            <a th:href="@{/classes/create}" class="btn btn-primary" style="margin-top:16px;">Create First Class</a>
+        </div>
+
+        <div class="class-grid" th:unless="${#lists.isEmpty(classes)}">
+            <div th:each="c : ${classes}" class="class-card">
+                <div class="class-card-header">
+                    <div class="class-name" th:text="${c.name}"></div>
+                    <div>
+                        <span th:if="${c.full}" class="badge badge-inactive">Full</span>
+                        <span th:unless="${c.full}" class="badge badge-active"
+                              th:text="${c.availableSpots} + ' left'"></span>
+                    </div>
+                </div>
+
+                <div class="class-meta">
+                    <span>📅 <span th:text="${#temporals.format(c.scheduleDateTime,'EEE, MMM d yyyy')}"></span></span>
+                    <span>🕐 <span th:text="${#temporals.format(c.scheduleDateTime,'HH:mm')}"></span></span>
+                    <span>👤 <span th:text="${c.createdBy}"></span></span>
+                    <span>👥 <span th:text="${c.bookedCount} + ' / ' + ${c.maxCapacity} + ' booked'"></span></span>
+                </div>
+
+                <div th:if="${c.description}" style="font-size:.83rem;color:var(--text-secondary);margin-bottom:12px;line-height:1.5;"
+                     th:text="${c.description}"></div>
+
+                <div class="capacity-bar">
+                    <div class="capacity-fill"
+                         th:classappend="${c.bookedCount >= c.maxCapacity} ? 'full' : (${c.maxCapacity > 0 and c.bookedCount * 100 / c.maxCapacity >= 80} ? 'near-full' : '')"
+                         th:style="'width:' + (${c.maxCapacity > 0 ? c.bookedCount * 100 / c.maxCapacity : 0}) + '%'"></div>
+                </div>
+
+                <div style="display:flex;gap:6px;margin-top:14px;flex-wrap:wrap;">
+                    <a th:href="@{/classes/participants/{id}(id=${c.id})}"
+                       class="btn btn-secondary btn-sm">👥 Participants</a>
+                    <a th:href="@{/classes/update/{id}(id=${c.id})}"
+                       class="btn btn-secondary btn-sm">✏️ Edit</a>
+                    <form th:action="@{/classes/cancel/{id}(id=${c.id})}" method="post"
+                          onsubmit="return confirm('Cancel this class?')">
+                        <button type="submit" class="btn btn-danger btn-sm">🚫 Cancel</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
 </body>
 </html>

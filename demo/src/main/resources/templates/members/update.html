@@ -1,11 +1,129 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<title>Update Member</title>
-</head>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Update Member')}"></head>
 <body>
-	<h1>Update Member Information</h1>
-	<p>Placeholder view for updating member details.</p>
+
+<div th:replace="~{fragments/layout :: sidebar('search')}"></div>
+
+<div class="main-content">
+    <div class="topbar">
+        <div class="topbar-title">✏️ Update Member</div>
+        <div class="topbar-actions">
+            <a th:href="@{/members/profile/{id}(id=${memberDto.id})}" class="btn btn-secondary">← Back to Profile</a>
+        </div>
+    </div>
+
+    <div class="page-body">
+        <div class="breadcrumb">
+            <a th:href="@{/}">Dashboard</a>
+            <span class="sep">›</span>
+            <a th:href="@{/members/search}">Members</a>
+            <span class="sep">›</span>
+            <a th:href="@{/members/profile/{id}(id=${memberDto.id})}">Profile</a>
+            <span class="sep">›</span>
+            <span>Edit</span>
+        </div>
+
+        <div th:replace="~{fragments/layout :: alerts}"></div>
+
+        <div class="grid-2" style="align-items:start;">
+
+            <!-- Edit Form -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">📝 Edit Information</div>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/members/update}" th:object="${memberDto}" method="post">
+                        <input type="hidden" th:field="*{id}"/>
+
+                        <div class="form-group" style="margin-bottom:16px;">
+                            <label>Full Name <span class="required-mark">*</span></label>
+                            <input type="text" th:field="*{fullName}" placeholder="Full name"/>
+                            <div class="field-error" th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}"></div>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom:16px;">
+                            <label>Email <span class="required-mark">*</span></label>
+                            <input type="email" th:field="*{email}" placeholder="Email address"/>
+                            <div class="field-error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom:16px;">
+                            <label>Phone Number <span class="required-mark">*</span></label>
+                            <input type="text" th:field="*{phoneNumber}" placeholder="Phone number"/>
+                            <div class="field-error" th:if="${#fields.hasErrors('phoneNumber')}" th:errors="*{phoneNumber}"></div>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom:16px;">
+                            <label>Date of Birth <span class="required-mark">*</span></label>
+                            <input type="date" th:field="*{dateOfBirth}"/>
+                            <div class="field-error" th:if="${#fields.hasErrors('dateOfBirth')}" th:errors="*{dateOfBirth}"></div>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom:16px;">
+                            <label>Address <span class="required-mark">*</span></label>
+                            <textarea th:field="*{address}" rows="2" placeholder="Address"></textarea>
+                            <div class="field-error" th:if="${#fields.hasErrors('address')}" th:errors="*{address}"></div>
+                        </div>
+
+                        <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:8px;">
+                            <div class="form-group" style="margin-bottom:16px;">
+                                <label>Account Status <span class="required-mark">*</span></label>
+                                <select th:field="*{accountStatus}">
+                                    <option th:each="s : ${statusOptions}"
+                                            th:value="${s}"
+                                            th:text="${s}"></option>
+                                </select>
+                            </div>
+
+                            <div class="form-group" style="margin-bottom:20px;">
+                                <label>Reason for Status Change</label>
+                                <input type="text" th:field="*{statusChangeReason}"
+                                       placeholder="Optional reason..."/>
+                            </div>
+                        </div>
+
+                        <div style="display:flex;gap:12px;">
+                            <button type="submit" class="btn btn-primary">💾 Save Changes</button>
+                            <a th:href="@{/members/profile/{id}(id=${memberDto.id})}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Status History -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">📋 Status Change History</div>
+                </div>
+                <div class="card-body">
+                    <div th:if="${#lists.isEmpty(statusHistory)}" class="empty-state" style="padding:20px 0;">
+                        <div class="empty-icon">📋</div>
+                        <h3>No History Yet</h3>
+                    </div>
+                    <div th:each="h : ${statusHistory}">
+                        <div style="padding:12px 0;border-bottom:1px solid var(--border);">
+                            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                                <span th:if="${h.oldStatus != null}"
+                                      th:class="'badge badge-' + ${#strings.toLowerCase(h.oldStatus.name())}"
+                                      th:text="${h.oldStatus}"></span>
+                                <span th:if="${h.oldStatus != null}" style="color:var(--text-muted);">→</span>
+                                <span th:class="'badge badge-' + ${#strings.toLowerCase(h.newStatus.name())}"
+                                      th:text="${h.newStatus}"></span>
+                            </div>
+                            <div th:if="${h.reason}" style="color:var(--text-secondary);font-size:.82rem;margin-top:5px;"
+                                 th:text="${h.reason}"></div>
+                            <div style="color:var(--text-muted);font-size:.77rem;margin-top:4px;"
+                                 th:text="${#temporals.format(h.changedAt,'MMM d, yyyy — HH:mm')}"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
 </body>
 </html>

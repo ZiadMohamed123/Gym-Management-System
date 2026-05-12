@@ -1,11 +1,105 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<title>Search Members</title>
-</head>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Search Members')}"></head>
 <body>
-	<h1>Search Members</h1>
-	<p>Placeholder view for admin member search.</p>
+
+<div th:replace="~{fragments/layout :: sidebar('search')}"></div>
+
+<div class="main-content">
+    <div class="topbar">
+        <div class="topbar-title">🔍 Members</div>
+        <div class="topbar-actions">
+            <a th:href="@{/members/register}" class="btn btn-primary">➕ New Member</a>
+        </div>
+    </div>
+
+    <div class="page-body">
+        <div th:replace="~{fragments/layout :: alerts}"></div>
+
+        <!-- Search Bar -->
+        <div class="card">
+            <div class="card-body" style="padding:18px 24px;">
+                <form th:action="@{/members/search}" method="get">
+                    <div class="search-bar">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" name="keyword" th:value="${keyword}"
+                               placeholder="Search by name, email, member ID, or phone number..."
+                               style="flex:1;"/>
+                        <button type="submit" class="btn btn-primary">Search</button>
+                        <a th:href="@{/members/search}" class="btn btn-secondary" th:if="${keyword}">Clear</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    👥 Members
+                    <span th:if="${keyword}" style="font-size:.9rem;font-weight:400;color:var(--text-secondary);text-transform:none;letter-spacing:0;">
+                        — results for "<span th:text="${keyword}" style="color:var(--accent);"></span>"
+                    </span>
+                </div>
+                <span class="badge badge-info" th:text="${#lists.size(members)} + ' found'"></span>
+            </div>
+            <div class="card-body" style="padding:0;">
+
+                <div th:if="${#lists.isEmpty(members)}" class="empty-state">
+                    <div class="empty-icon">🔍</div>
+                    <h3>No Members Found</h3>
+                    <p style="margin-top:8px;">
+                        <span th:if="${keyword}">No results for "<strong th:text="${keyword}"></strong>"</span>
+                        <span th:unless="${keyword}">No members registered yet.</span>
+                    </p>
+                    <a th:href="@{/members/register}" class="btn btn-primary" style="margin-top:16px;">Register First Member</a>
+                </div>
+
+                <div class="table-wrapper" th:if="${!#lists.isEmpty(members)}">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Member ID</th>
+                                <th>Full Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Joined</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="m : ${members}">
+                                <td><span class="member-id" th:text="${m.memberId}"></span></td>
+                                <td style="font-weight:600;" th:text="${m.fullName}"></td>
+                                <td style="color:var(--text-secondary);" th:text="${m.email}"></td>
+                                <td style="color:var(--text-secondary);" th:text="${m.phoneNumber}"></td>
+                                <td style="color:var(--text-muted);font-size:.84rem;"
+                                    th:text="${#temporals.format(m.registrationDate,'MMM d, yyyy')}"></td>
+                                <td>
+                                    <span th:class="'badge badge-' + ${#strings.toLowerCase(m.accountStatus.name())}"
+                                          th:text="${m.accountStatus}"></span>
+                                </td>
+                                <td>
+                                    <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                                        <a th:href="@{/members/profile/{id}(id=${m.id})}"
+                                           class="btn btn-secondary btn-sm">👁 View</a>
+                                        <a th:href="@{/members/update/{id}(id=${m.id})}"
+                                           class="btn btn-secondary btn-sm">✏️ Edit</a>
+                                        <a th:href="@{/subscriptions/renew/{id}(id=${m.id})}"
+                                           class="btn btn-success btn-sm">🔄 Renew</a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
 </body>
 </html>

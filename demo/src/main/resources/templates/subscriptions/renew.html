@@ -1,11 +1,83 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<title>Renew Subscription</title>
-</head>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Renew Subscription')}"></head>
 <body>
-	<h1>Renew Subscription</h1>
-	<p>Placeholder view for subscription renewal.</p>
+
+<div th:replace="~{fragments/layout :: sidebar('assign')}"></div>
+
+<div class="main-content">
+    <div class="topbar">
+        <div class="topbar-title">🔄 Renew Subscription</div>
+        <div class="topbar-actions">
+            <a th:href="@{/members/profile/{id}(id=${member.id})}" class="btn btn-secondary">← Back to Profile</a>
+        </div>
+    </div>
+
+    <div class="page-body">
+        <div th:replace="~{fragments/layout :: alerts}"></div>
+
+        <!-- Member Info Banner -->
+        <div class="profile-hero" style="margin-bottom:24px;">
+            <div class="profile-avatar" th:text="${#strings.substring(member.fullName, 0, 1)}"></div>
+            <div class="profile-info">
+                <h2 th:text="${member.fullName}"></h2>
+                <div style="margin-top:6px;display:flex;gap:10px;align-items:center;">
+                    <span class="member-id" th:text="${member.memberId}"></span>
+                    <span th:class="'badge badge-' + ${#strings.toLowerCase(member.accountStatus.name())}"
+                          th:text="${member.accountStatus}"></span>
+                </div>
+                <div style="font-size:.87rem;color:var(--text-secondary);margin-top:8px;" th:text="${member.email}"></div>
+            </div>
+        </div>
+
+        <div class="card" style="max-width:700px;">
+            <div class="card-header">
+                <div class="card-title">🔄 Renewal Details</div>
+            </div>
+            <div class="card-body">
+                <form th:action="@{/subscriptions/renew}" th:object="${subscriptionDto}" method="post">
+                    <input type="hidden" th:field="*{memberId}"/>
+
+                    <div class="form-grid">
+
+                        <div class="form-group full-width">
+                            <label>Select Plan <span class="required-mark">*</span></label>
+                            <select th:field="*{planId}">
+                                <option value="">— Choose Plan —</option>
+                                <option th:each="p : ${plans}"
+                                        th:value="${p.id}"
+                                        th:text="${p.name} + ' — $' + ${p.price} + ' (' + ${p.duration} + ')'"></option>
+                            </select>
+                            <div class="field-error" th:if="${#fields.hasErrors('planId')}" th:errors="*{planId}"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>New Start Date <span class="required-mark">*</span></label>
+                            <input type="date" th:field="*{startDate}" th:value="${today}"/>
+                            <div class="field-error" th:if="${#fields.hasErrors('startDate')}" th:errors="*{startDate}"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Payment Status <span class="required-mark">*</span></label>
+                            <select th:field="*{paymentStatus}">
+                                <option value="">— Select —</option>
+                                <option th:each="ps : ${paymentStatuses}" th:value="${ps}" th:text="${ps}"></option>
+                            </select>
+                            <div class="field-error" th:if="${#fields.hasErrors('paymentStatus')}" th:errors="*{paymentStatus}"></div>
+                        </div>
+
+                    </div>
+
+                    <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--border);display:flex;gap:12px;">
+                        <button type="submit" class="btn btn-success btn-lg">🔄 Renew Subscription</button>
+                        <a th:href="@{/members/profile/{id}(id=${member.id})}" class="btn btn-secondary btn-lg">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+
 </body>
 </html>

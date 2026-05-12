@@ -1,11 +1,190 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<title>Member Profile</title>
-</head>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Member Profile')}"></head>
 <body>
-	<h1>Member Profile</h1>
-	<p>Placeholder view for a member profile.</p>
+
+<div th:replace="~{fragments/layout :: sidebar('search')}"></div>
+
+<div class="main-content">
+    <div class="topbar">
+        <div class="topbar-title">👤 Member Profile</div>
+        <div class="topbar-actions">
+            <a th:href="@{/members/update/{id}(id=${member.id})}" class="btn btn-secondary">✏️ Edit</a>
+            <a th:href="@{/subscriptions/assign}" class="btn btn-primary">🎫 Assign Plan</a>
+        </div>
+    </div>
+
+    <div class="page-body">
+        <div class="breadcrumb">
+            <a th:href="@{/}">Dashboard</a>
+            <span class="sep">›</span>
+            <a th:href="@{/members/search}">Members</a>
+            <span class="sep">›</span>
+            <span th:text="${member.fullName}"></span>
+        </div>
+
+        <div th:replace="~{fragments/layout :: alerts}"></div>
+
+        <!-- Profile Hero -->
+        <div class="profile-hero">
+            <div class="profile-avatar"
+                 th:text="${#strings.substring(member.fullName, 0, 1)}"></div>
+            <div class="profile-info">
+                <h2 th:text="${member.fullName}"></h2>
+                <div style="margin-top:8px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                    <span class="member-id" th:text="${member.memberId}"></span>
+                    <span th:class="'badge badge-' + ${#strings.toLowerCase(member.accountStatus.name())}"
+                          th:text="${member.accountStatus}"></span>
+                </div>
+                <div class="profile-meta">
+                    <span>📧 <span th:text="${member.email}"></span></span>
+                    <span>📱 <span th:text="${member.phoneNumber}"></span></span>
+                    <span>🎂 <span th:text="${#temporals.format(member.dateOfBirth,'MMM d, yyyy')}"></span></span>
+                    <span>📍 <span th:text="${member.address}"></span></span>
+                    <span>📅 Joined <span th:text="${#temporals.format(member.registrationDate,'MMM d, yyyy')}"></span></span>
+                </div>
+            </div>
+            <div style="margin-left:auto;display:flex;flex-direction:column;gap:8px;">
+                <a th:href="@{/members/update/{id}(id=${member.id})}" class="btn btn-secondary">✏️ Edit Info</a>
+                <a th:href="@{/subscriptions/renew/{id}(id=${member.id})}" class="btn btn-success">🔄 Renew Plan</a>
+                <a th:href="@{/subscriptions/assign}" class="btn btn-primary">🎫 New Plan</a>
+            </div>
+        </div>
+
+        <div class="grid-2">
+
+            <!-- Active Subscription -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">🎫 Active Subscription</div>
+                </div>
+                <div class="card-body">
+                    <div th:if="${activeSubscription == null}" class="empty-state" style="padding:20px 0;">
+                        <div class="empty-icon">🎫</div>
+                        <h3>No Active Plan</h3>
+                        <p style="margin-top:6px;">This member has no active subscription.</p>
+                        <a th:href="@{/subscriptions/assign}" class="btn btn-primary" style="margin-top:14px;">Assign Plan</a>
+                    </div>
+                    <div th:if="${activeSubscription != null}" class="sub-box active-sub">
+                        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
+                            <div>
+                                <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.3rem;font-weight:800;text-transform:uppercase;"
+                                     th:text="${activeSubscription.plan.name}"></div>
+                                <div style="font-size:.83rem;color:var(--text-secondary);margin-top:2px;"
+                                     th:text="${activeSubscription.plan.duration}"></div>
+                            </div>
+                            <span th:class="'badge badge-' + ${#strings.toLowerCase(activeSubscription.paymentStatus.name())}"
+                                  th:text="${activeSubscription.paymentStatus}"></span>
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:.87rem;">
+                            <div>
+                                <div style="color:var(--text-muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;">Start Date</div>
+                                <div style="margin-top:3px;font-weight:600;"
+                                     th:text="${#temporals.format(activeSubscription.startDate,'MMM d, yyyy')}"></div>
+                            </div>
+                            <div>
+                                <div style="color:var(--text-muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;">End Date</div>
+                                <div style="margin-top:3px;font-weight:600;"
+                                     th:text="${#temporals.format(activeSubscription.endDate,'MMM d, yyyy')}"></div>
+                            </div>
+                            <div>
+                                <div style="color:var(--text-muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;">Price</div>
+                                <div style="margin-top:3px;font-weight:700;color:var(--accent);font-size:1.1rem;"
+                                     th:text="'$' + ${activeSubscription.plan.price}"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Subscription History -->
+                    <div th:if="${!#lists.isEmpty(allSubscriptions)}" style="margin-top:20px;">
+                        <div style="font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted);margin-bottom:10px;">History</div>
+                        <div th:each="sub : ${allSubscriptions}" style="padding:10px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-size:.85rem;">
+                            <div>
+                                <div style="font-weight:600;" th:text="${sub.plan.name}"></div>
+                                <div style="color:var(--text-muted);font-size:.78rem;"
+                                     th:text="${#temporals.format(sub.startDate,'MMM d')} + ' → ' + ${#temporals.format(sub.endDate,'MMM d, yyyy')}"></div>
+                            </div>
+                            <div style="display:flex;gap:6px;align-items:center;">
+                                <span th:class="'badge badge-' + ${#strings.toLowerCase(sub.paymentStatus.name())}"
+                                      th:text="${sub.paymentStatus}"></span>
+                                <span th:if="${sub.active}" class="badge badge-active">Active</span>
+                                <span th:unless="${sub.active}" class="badge badge-expired">Expired</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status History -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">📋 Status History</div>
+                </div>
+                <div class="card-body">
+                    <div th:if="${#lists.isEmpty(member.statusHistory)}" class="empty-state" style="padding:20px 0;">
+                        <div class="empty-icon">📋</div>
+                        <h3>No History</h3>
+                    </div>
+                    <div th:each="h : ${member.statusHistory}">
+                        <div style="padding:12px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;font-size:.87rem;">
+                            <div>
+                                <div style="display:flex;align-items:center;gap:8px;">
+                                    <span th:if="${h.oldStatus != null}"
+                                          th:class="'badge badge-' + ${#strings.toLowerCase(h.oldStatus.name())}"
+                                          th:text="${h.oldStatus}"></span>
+                                    <span th:if="${h.oldStatus != null}" style="color:var(--text-muted);">→</span>
+                                    <span th:class="'badge badge-' + ${#strings.toLowerCase(h.newStatus.name())}"
+                                          th:text="${h.newStatus}"></span>
+                                </div>
+                                <div th:if="${h.reason}" style="color:var(--text-muted);font-size:.78rem;margin-top:5px;"
+                                     th:text="${h.reason}"></div>
+                            </div>
+                            <div style="color:var(--text-muted);font-size:.78rem;white-space:nowrap;"
+                                 th:text="${#temporals.format(h.changedAt,'MMM d, yyyy HH:mm')}"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Attendance Records -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">✅ Attendance Records</div>
+                <a th:href="@{/attendance/mark}" class="btn btn-secondary btn-sm">Mark Attendance</a>
+            </div>
+            <div class="card-body" style="padding:0;">
+                <div th:if="${#lists.isEmpty(attendanceRecords)}" class="empty-state">
+                    <div class="empty-icon">✅</div>
+                    <h3>No Attendance Records</h3>
+                </div>
+                <div class="table-wrapper" th:if="${!#lists.isEmpty(attendanceRecords)}">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Date</th>
+                                <th>Check-in Time</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="a,stat : ${attendanceRecords}">
+                                <td style="color:var(--text-muted);" th:text="${stat.count}"></td>
+                                <td style="font-weight:600;"
+                                    th:text="${#temporals.format(a.date,'EEE, MMM d yyyy')}"></td>
+                                <td th:text="${#temporals.format(a.time,'HH:mm')}"></td>
+                                <td style="color:var(--text-secondary);" th:text="${a.notes ?: '—'}"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
 </body>
 </html>

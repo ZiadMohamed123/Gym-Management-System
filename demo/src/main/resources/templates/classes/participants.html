@@ -1,11 +1,113 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<title>Class Participants</title>
-</head>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Class Participants')}"></head>
 <body>
-	<h1>Class Participants</h1>
-	<p>Placeholder view for class participants list.</p>
+
+<div th:replace="~{fragments/layout :: sidebar('classes')}"></div>
+
+<div class="main-content">
+    <div class="topbar">
+        <div class="topbar-title">👥 Class Participants</div>
+        <div class="topbar-actions">
+            <a th:href="@{/classes}" class="btn btn-secondary">← All Classes</a>
+        </div>
+    </div>
+
+    <div class="page-body">
+        <div class="breadcrumb">
+            <a th:href="@{/}">Dashboard</a>
+            <span class="sep">›</span>
+            <a th:href="@{/classes}">Classes</a>
+            <span class="sep">›</span>
+            <span th:text="${gymClass.name}"></span>
+        </div>
+
+        <div th:replace="~{fragments/layout :: alerts}"></div>
+
+        <!-- Class Info -->
+        <div class="card" style="margin-bottom:20px;">
+            <div class="card-body" style="padding:20px 24px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+                    <div>
+                        <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.8rem;font-weight:800;text-transform:uppercase;"
+                             th:text="${gymClass.name}"></div>
+                        <div style="display:flex;gap:16px;margin-top:8px;font-size:.87rem;color:var(--text-secondary);flex-wrap:wrap;">
+                            <span>📅 <span th:text="${#temporals.format(gymClass.scheduleDateTime,'EEE, MMM d yyyy')}"></span></span>
+                            <span>🕐 <span th:text="${#temporals.format(gymClass.scheduleDateTime,'HH:mm')}"></span></span>
+                            <span>👤 <span th:text="${gymClass.createdBy}"></span></span>
+                            <span>📍 Max: <span th:text="${gymClass.maxCapacity}"></span></span>
+                        </div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-family:'Barlow Condensed',sans-serif;font-size:2.5rem;font-weight:900;line-height:1;color:var(--accent);"
+                             th:text="${#lists.size(participants)}"></div>
+                        <div style="font-size:.78rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;">
+                            Booked / <span th:text="${gymClass.maxCapacity}"></span>
+                        </div>
+                        <div class="capacity-bar" style="width:160px;margin-top:8px;">
+                            <div class="capacity-fill"
+                                 th:classappend="${#lists.size(participants) >= gymClass.maxCapacity} ? 'full' : ''"
+                                 th:style="'width:' + (${gymClass.maxCapacity > 0 ? #lists.size(participants) * 100 / gymClass.maxCapacity : 0}) + '%'"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Participants List -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">Booked Members</div>
+                <span class="badge badge-info" th:text="${#lists.size(participants)} + ' participants'"></span>
+            </div>
+            <div class="card-body" style="padding:0;">
+                <div th:if="${#lists.isEmpty(participants)}" class="empty-state">
+                    <div class="empty-icon">👥</div>
+                    <h3>No Bookings Yet</h3>
+                    <p style="margin-top:8px;">No members have booked this class yet.</p>
+                </div>
+                <div class="table-wrapper" th:unless="${#lists.isEmpty(participants)}">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Member ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Booked At</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="b,stat : ${participants}">
+                                <td style="color:var(--text-muted);" th:text="${stat.count}"></td>
+                                <td><span class="member-id" th:text="${b.member.memberId}"></span></td>
+                                <td style="font-weight:600;" th:text="${b.member.fullName}"></td>
+                                <td style="color:var(--text-secondary);" th:text="${b.member.email}"></td>
+                                <td style="color:var(--text-secondary);" th:text="${b.member.phoneNumber}"></td>
+                                <td style="color:var(--text-muted);font-size:.83rem;"
+                                    th:text="${#temporals.format(b.bookedAt,'MMM d, HH:mm')}"></td>
+                                <td>
+                                    <div style="display:flex;gap:6px;">
+                                        <a th:href="@{/members/profile/{id}(id=${b.member.id})}"
+                                           class="btn btn-secondary btn-sm">👁 Profile</a>
+                                        <form th:action="@{/classes/booking/cancel/{bId}(bId=${b.id})}"
+                                              method="post" onsubmit="return confirm('Remove this booking?')">
+                                            <input type="hidden" name="classId" th:value="${gymClass.id}"/>
+                                            <button type="submit" class="btn btn-danger btn-sm">🗑 Remove</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
 </body>
 </html>

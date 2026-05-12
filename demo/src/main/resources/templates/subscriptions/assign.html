@@ -1,11 +1,93 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<title>Assign Subscription</title>
-</head>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Assign Subscription')}"></head>
 <body>
-	<h1>Assign Subscription</h1>
-	<p>Placeholder view for assigning a membership plan to a member.</p>
+
+<div th:replace="~{fragments/layout :: sidebar('assign')}"></div>
+
+<div class="main-content">
+    <div class="topbar">
+        <div class="topbar-title">🎫 Assign Subscription</div>
+        <div class="topbar-actions">
+            <a th:href="@{/members/search}" class="btn btn-secondary">← Members</a>
+        </div>
+    </div>
+
+    <div class="page-body">
+        <div class="breadcrumb">
+            <a th:href="@{/}">Dashboard</a>
+            <span class="sep">›</span>
+            <span>Assign Subscription</span>
+        </div>
+
+        <div th:replace="~{fragments/layout :: alerts}"></div>
+
+        <div class="card" style="max-width:800px;">
+            <div class="card-header">
+                <div class="card-title">🎫 New Subscription</div>
+                <span class="text-muted" style="font-size:.82rem;">Assigning a new plan will deactivate any existing active subscription.</span>
+            </div>
+            <div class="card-body">
+                <form th:action="@{/subscriptions/assign}" th:object="${subscriptionDto}" method="post">
+                    <div class="form-grid">
+
+                        <div class="form-group">
+                            <label>Select Member <span class="required-mark">*</span></label>
+                            <select th:field="*{memberId}">
+                                <option value="">— Choose Member —</option>
+                                <option th:each="m : ${members}"
+                                        th:value="${m.id}"
+                                        th:text="${m.memberId} + ' — ' + ${m.fullName}"></option>
+                            </select>
+                            <div class="field-error" th:if="${#fields.hasErrors('memberId')}" th:errors="*{memberId}"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Membership Plan <span class="required-mark">*</span></label>
+                            <select th:field="*{planId}">
+                                <option value="">— Choose Plan —</option>
+                                <option th:each="p : ${plans}"
+                                        th:value="${p.id}"
+                                        th:text="${p.name} + ' — $' + ${p.price} + ' (' + ${p.duration} + ')'"></option>
+                            </select>
+                            <div class="field-error" th:if="${#fields.hasErrors('planId')}" th:errors="*{planId}"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Start Date <span class="required-mark">*</span></label>
+                            <input type="date" th:field="*{startDate}"
+                                   th:value="${today}"/>
+                            <div class="field-error" th:if="${#fields.hasErrors('startDate')}" th:errors="*{startDate}"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Payment Status <span class="required-mark">*</span></label>
+                            <select th:field="*{paymentStatus}">
+                                <option value="">— Payment Status —</option>
+                                <option th:each="ps : ${paymentStatuses}"
+                                        th:value="${ps}" th:text="${ps}"></option>
+                            </select>
+                            <div class="field-error" th:if="${#fields.hasErrors('paymentStatus')}" th:errors="*{paymentStatus}"></div>
+                        </div>
+
+                    </div>
+
+                    <div style="margin-top:28px;padding-top:20px;border-top:1px solid var(--border);
+                                background:var(--accent-glow);margin:-0px -24px -24px;padding:20px 24px 24px;border-radius:0 0 var(--radius-lg) var(--radius-lg);">
+                        <div style="font-size:.82rem;color:var(--text-secondary);margin-bottom:14px;">
+                            ℹ️ The end date will be automatically calculated based on the plan duration.
+                        </div>
+                        <div style="display:flex;gap:12px;">
+                            <button type="submit" class="btn btn-primary btn-lg">🎫 Assign Subscription</button>
+                            <a th:href="@{/members/search}" class="btn btn-secondary btn-lg">Cancel</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+
 </body>
 </html>

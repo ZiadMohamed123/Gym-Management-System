@@ -1,11 +1,121 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<title>Daily Attendance</title>
-</head>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Mark Attendance')}"></head>
 <body>
-	<h1>Daily Attendance</h1>
-	<p>Placeholder view for daily visit attendance.</p>
+
+<div th:replace="~{fragments/layout :: sidebar('attendance')}"></div>
+
+<div class="main-content">
+    <div class="topbar">
+        <div class="topbar-title">✅ Daily Attendance</div>
+    </div>
+
+    <div class="page-body">
+        <div th:replace="~{fragments/layout :: alerts}"></div>
+
+        <div class="grid-2" style="align-items:start;">
+
+            <!-- Mark Form -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">✅ Mark Attendance</div>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/attendance/mark}" th:object="${attendanceDto}" method="post">
+
+                        <div class="form-group" style="margin-bottom:16px;">
+                            <label>Select Member <span class="required-mark">*</span></label>
+                            <select th:field="*{memberId}" required>
+                                <option value="">— Choose Member —</option>
+                                <option th:each="m : ${members}"
+                                        th:value="${m.id}"
+                                        th:text="${m.memberId} + ' — ' + ${m.fullName}"></option>
+                            </select>
+                            <div class="field-error" th:if="${#fields.hasErrors('memberId')}" th:errors="*{memberId}"></div>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom:16px;">
+                            <label>Date <span class="required-mark">*</span></label>
+                            <input type="date" th:field="*{date}"/>
+                            <div class="field-error" th:if="${#fields.hasErrors('date')}" th:errors="*{date}"></div>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom:16px;">
+                            <label>Check-in Time <span class="required-mark">*</span></label>
+                            <input type="time" th:field="*{time}"/>
+                            <div class="field-error" th:if="${#fields.hasErrors('time')}" th:errors="*{time}"></div>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom:24px;">
+                            <label>Notes (optional)</label>
+                            <input type="text" th:field="*{notes}" placeholder="Any notes..."/>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-lg" style="width:100%;">
+                            ✅ Mark Attendance
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Today's Records -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">📋 Records for
+                        <span th:text="${#temporals.format(selectedDate,'EEE, MMM d yyyy')}"></span>
+                    </div>
+                    <span class="badge badge-info" th:text="${#lists.size(todayRecords)} + ' visits'"></span>
+                </div>
+
+                <!-- Date Navigation -->
+                <div style="padding:12px 24px;border-bottom:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;">
+                    <a th:href="@{/attendance/mark(date=${selectedDate.minusDays(1)})}"
+                       class="btn btn-secondary btn-sm">← Prev</a>
+                    <a th:href="@{/attendance/mark}" class="btn btn-secondary btn-sm">Today</a>
+                    <a th:href="@{/attendance/mark(date=${selectedDate.plusDays(1)})}"
+                       class="btn btn-secondary btn-sm">Next →</a>
+                </div>
+
+                <div class="card-body" style="padding:0;">
+                    <div th:if="${#lists.isEmpty(todayRecords)}" class="empty-state" style="padding:40px;">
+                        <div class="empty-icon">✅</div>
+                        <h3>No Visits</h3>
+                        <p style="margin-top:6px;">No attendance marked for this date.</p>
+                    </div>
+                    <div class="table-wrapper" th:unless="${#lists.isEmpty(todayRecords)}">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Member</th>
+                                    <th>Time</th>
+                                    <th>Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="a,stat : ${todayRecords}">
+                                    <td style="color:var(--text-muted);" th:text="${stat.count}"></td>
+                                    <td>
+                                        <div style="font-weight:600;" th:text="${a.member.fullName}"></div>
+                                        <div>
+                                            <span class="member-id" style="font-size:.75rem;"
+                                                  th:text="${a.member.memberId}"></span>
+                                        </div>
+                                    </td>
+                                    <td style="font-weight:600;color:var(--accent);"
+                                        th:text="${#temporals.format(a.time,'HH:mm')}"></td>
+                                    <td style="color:var(--text-muted);font-size:.83rem;"
+                                        th:text="${a.notes ?: '—'}"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
 </body>
 </html>

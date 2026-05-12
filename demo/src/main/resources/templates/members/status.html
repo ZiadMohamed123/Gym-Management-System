@@ -1,11 +1,94 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<title>Membership Status</title>
-</head>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Member Status')}"></head>
 <body>
-	<h1>Membership Status</h1>
-	<p>Placeholder view for trainer membership status lookup.</p>
+
+<div th:replace="~{fragments/layout :: sidebar('status')}"></div>
+
+<div class="main-content">
+    <div class="topbar">
+        <div class="topbar-title">🔖 Member Status Overview</div>
+    </div>
+
+    <div class="page-body">
+        <div th:replace="~{fragments/layout :: alerts}"></div>
+
+        <!-- Status Summary -->
+        <div class="stats-grid" style="margin-bottom:28px;">
+            <div class="stat-card green">
+                <div class="stat-icon">✅</div>
+                <div class="stat-value"
+                     th:text="${#lists.size(members.?[accountStatus.name() == 'ACTIVE'])}">0</div>
+                <div class="stat-label">Active</div>
+            </div>
+            <div class="stat-card red">
+                <div class="stat-icon">❌</div>
+                <div class="stat-value"
+                     th:text="${#lists.size(members.?[accountStatus.name() == 'INACTIVE'])}">0</div>
+                <div class="stat-label">Inactive</div>
+            </div>
+            <div class="stat-card orange">
+                <div class="stat-icon">⏸️</div>
+                <div class="stat-value"
+                     th:text="${#lists.size(members.?[accountStatus.name() == 'SUSPENDED'])}">0</div>
+                <div class="stat-label">Suspended</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">👥</div>
+                <div class="stat-value" th:text="${#lists.size(members)}">0</div>
+                <div class="stat-label">Total</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">All Members — Status</div>
+            </div>
+            <div class="card-body" style="padding:0;">
+                <div th:if="${#lists.isEmpty(members)}" class="empty-state">
+                    <div class="empty-icon">👥</div>
+                    <h3>No Members</h3>
+                </div>
+                <div class="table-wrapper" th:unless="${#lists.isEmpty(members)}">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Member ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Registered</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="m : ${members}">
+                                <td><span class="member-id" th:text="${m.memberId}"></span></td>
+                                <td style="font-weight:600;" th:text="${m.fullName}"></td>
+                                <td style="color:var(--text-secondary);" th:text="${m.email}"></td>
+                                <td style="color:var(--text-muted);font-size:.84rem;"
+                                    th:text="${#temporals.format(m.registrationDate,'MMM d, yyyy')}"></td>
+                                <td>
+                                    <span th:class="'badge badge-' + ${#strings.toLowerCase(m.accountStatus.name())}"
+                                          th:text="${m.accountStatus}"></span>
+                                </td>
+                                <td>
+                                    <div style="display:flex;gap:6px;">
+                                        <a th:href="@{/members/profile/{id}(id=${m.id})}"
+                                           class="btn btn-secondary btn-sm">👁 Profile</a>
+                                        <a th:href="@{/members/update/{id}(id=${m.id})}"
+                                           class="btn btn-secondary btn-sm">✏️ Edit</a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
 </body>
 </html>

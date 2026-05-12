@@ -1,11 +1,95 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<title>Member Registration</title>
-</head>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Register Member')}"></head>
 <body>
-	<h1>Member Registration</h1>
-	<p>Placeholder view for member registration.</p>
+
+<div th:replace="~{fragments/layout :: sidebar('register')}"></div>
+
+<div class="main-content">
+    <div class="topbar">
+        <div class="topbar-title">➕ Register New Member</div>
+        <div class="topbar-actions">
+            <a th:href="@{/members/search}" class="btn btn-secondary">← Back to Members</a>
+        </div>
+    </div>
+
+    <div class="page-body">
+        <div class="breadcrumb">
+            <a th:href="@{/}">Dashboard</a>
+            <span class="sep">›</span>
+            <a th:href="@{/members/search}">Members</a>
+            <span class="sep">›</span>
+            <span>Register</span>
+        </div>
+
+        <div th:replace="~{fragments/layout :: alerts}"></div>
+
+        <div class="card" style="max-width:800px;">
+            <div class="card-header">
+                <div class="card-title">👤 Member Information</div>
+                <span class="text-muted" style="font-size:.82rem;">All fields marked <span class="required-mark">*</span> are required</span>
+            </div>
+            <div class="card-body">
+                <form th:action="@{/members/register}" th:object="${memberDto}" method="post">
+                    <div class="form-grid">
+
+                        <div class="form-group">
+                            <label for="fullName">Full Name <span class="required-mark">*</span></label>
+                            <input type="text" id="fullName" th:field="*{fullName}"
+                                   placeholder="e.g. John Smith"
+                                   th:classappend="${#fields.hasErrors('fullName')} ? 'is-error' : ''"/>
+                            <div class="field-error" th:if="${#fields.hasErrors('fullName')}"
+                                 th:errors="*{fullName}"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email Address <span class="required-mark">*</span></label>
+                            <input type="email" id="email" th:field="*{email}"
+                                   placeholder="john@example.com"
+                                   th:classappend="${#fields.hasErrors('email')} ? 'is-error' : ''"/>
+                            <div class="field-error" th:if="${#fields.hasErrors('email')}"
+                                 th:errors="*{email}"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phoneNumber">Phone Number <span class="required-mark">*</span></label>
+                            <input type="text" id="phoneNumber" th:field="*{phoneNumber}"
+                                   placeholder="e.g. 01012345678"
+                                   th:classappend="${#fields.hasErrors('phoneNumber')} ? 'is-error' : ''"/>
+                            <div class="field-error" th:if="${#fields.hasErrors('phoneNumber')}"
+                                 th:errors="*{phoneNumber}"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="dateOfBirth">Date of Birth <span class="required-mark">*</span></label>
+                            <input type="date" id="dateOfBirth" th:field="*{dateOfBirth}"
+                                   th:classappend="${#fields.hasErrors('dateOfBirth')} ? 'is-error' : ''"/>
+                            <div class="field-error" th:if="${#fields.hasErrors('dateOfBirth')}"
+                                 th:errors="*{dateOfBirth}"></div>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label for="address">Address <span class="required-mark">*</span></label>
+                            <textarea id="address" th:field="*{address}"
+                                      placeholder="Full address..."
+                                      rows="3"
+                                      th:classappend="${#fields.hasErrors('address')} ? 'is-error' : ''"></textarea>
+                            <div class="field-error" th:if="${#fields.hasErrors('address')}"
+                                 th:errors="*{address}"></div>
+                        </div>
+
+                    </div>
+
+                    <div style="display:flex;gap:12px;margin-top:28px;padding-top:20px;border-top:1px solid var(--border);">
+                        <button type="submit" class="btn btn-primary btn-lg">✅ Register Member</button>
+                        <a th:href="@{/members/search}" class="btn btn-secondary btn-lg">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+
 </body>
 </html>
