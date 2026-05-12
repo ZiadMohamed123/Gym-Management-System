@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GymPro — Push Your Limits</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      rel="preconnect"
+      href="https://fonts.gstatic.com"
+      crossorigin="anonymous"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Barlow:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      :root {
+        --orange: #ff4d00;
+        --orange-dim: #cc3d00;
+        --dark: #0d0d0d;
+        --dark2: #161616;
+        --dark3: #1f1f1f;
+        --text: #f0f0f0;
+        --muted: #888;
+      }
+
+      html,
+      body {
+        font-family: "Barlow", sans-serif;
+        background: var(--dark);
+        color: var(--text);
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+
+      nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 20px 60px;
+        background: rgba(13, 13, 13, 0.85);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .nav-logo {
+        font-family: "Barlow Condensed", sans-serif;
+        font-size: 1.6rem;
+        font-weight: 900;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--text);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .nav-logo .bolt {
+        color: var(--orange);
+        font-size: 1.4rem;
+      }
+
+      .nav-links {
+        display: flex;
+        gap: 36px;
+        list-style: none;
+      }
+
+      .nav-links a {
+        color: rgba(240, 240, 240, 0.75);
+        text-decoration: none;
+        font-size: 0.95rem;
+        font-weight: 500;
+        transition: color 0.2s;
+      }
+
+      .nav-links a:hover {
+        color: var(--text);
+      }
+
+      .nav-cta {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+
+      .btn-nav {
+        padding: 10px 24px;
+        border-radius: 999px;
+        font-family: "Barlow", sans-serif;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.2s;
+      }
+
+      .btn-outline {
+        background: transparent;
+        border: 1.5px solid rgba(255, 255, 255, 0.25);
+        color: var(--text);
+      }
+
+      .btn-outline:hover {
+        border-color: var(--orange);
+        color: var(--orange);
+      }
+
+      .btn-orange {
+        background: var(--orange);
+        border: none;
+        color: #fff;
+      }
+      .btn-orange:hover {
+        background: var(--orange-dim);
+        transform: translateY(-1px);
+      }
+
+      .hero {
+        min-height: 100vh;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        align-items: center;
+        padding: 0 60px;
+        padding-top: 80px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .hero-bg {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          ellipse 60% 80% at 70% 50%,
+          rgba(255, 77, 0, 0.12) 0%,
+          transparent 70%
+        );
+        pointer-events: none;
+      }
+
+      .hero-left {
+        position: relative;
+        z-index: 2;
+        max-width: 600px;
+      }
+
+      .hero-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255, 77, 0, 0.12);
+        border: 1px solid rgba(255, 77, 0, 0.3);
+        color: var(--orange);
+        padding: 6px 16px;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        margin-bottom: 28px;
+      }
+
+      .hero-tag::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--orange);
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.3;
+        }
+      }
+
+      .hero h1 {
+        font-family: "Barlow Condensed", sans-serif;
+        font-size: clamp(3.5rem, 7vw, 6rem);
+        font-weight: 900;
+        line-height: 0.95;
+        text-transform: uppercase;
+        letter-spacing: -0.01em;
+        margin-bottom: 24px;
+      }
+
+      .hero h1 .highlight {
+        color: var(--orange);
+        display: block;
+      }
+
+      .hero p {
+        font-size: 1.1rem;
+        color: rgba(240, 240, 240, 0.65);
+        line-height: 1.7;
+        max-width: 460px;
+        margin-bottom: 40px;
+      }
+
+      .hero-actions {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        margin-bottom: 56px;
+      }
+
+      .btn-hero-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: var(--orange);
+        color: #fff;
+        padding: 16px 36px;
+        border-radius: 999px;
+        font-size: 1rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all 0.2s;
+        border: none;
+        cursor: pointer;
+      }
+
+      .btn-hero-primary:hover {
+        background: var(--orange-dim);
+        transform: translateY(-2px);
+      }
+      .btn-hero-primary .arrow {
+        font-size: 1.1rem;
+      }
+
+      .btn-hero-secondary {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--text);
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: color 0.2s;
+      }
+
+      .btn-hero-secondary:hover {
+        color: var(--orange);
+      }
+
+      .play-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: var(--orange);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+      }
+
+      .hero-stats {
+        display: flex;
+        gap: 40px;
+      }
+
+      .stat-num {
+        font-family: "Barlow Condensed", sans-serif;
+        font-size: 2.2rem;
+        font-weight: 900;
+        color: var(--text);
+        line-height: 1;
+      }
+
+      .stat-num span {
+        color: var(--orange);
+      }
+
+      .stat-lbl {
+        font-size: 0.78rem;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-top: 4px;
+      }
+
+      .hero-right {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 80vh;
+      }
+
+      .hero-image-wrapper {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .hero-circle {
+        width: 480px;
+        height: 480px;
+        border-radius: 50%;
+        background: var(--dark3);
+        border: 1px solid rgba(255, 77, 0, 0.15);
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
+
+      .hero-circle::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          ellipse at 50% 80%,
+          rgba(255, 77, 0, 0.2),
+          transparent 70%
+        );
+      }
+
+      .hero-figure {
+        font-size: 18rem;
+        line-height: 1;
+        position: relative;
+        z-index: 1;
+        filter: saturate(0) brightness(1.2);
+        user-select: none;
+      }
+
+      .float-card {
+        position: absolute;
+        background: rgba(22, 22, 22, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 14px;
+        padding: 14px 18px;
+        backdrop-filter: blur(10px);
+      }
+
+      .float-card-1 {
+        top: 15%;
+        left: -20px;
+      }
+      .float-card-2 {
+        bottom: 20%;
+        right: -20px;
+      }
+
+      .float-card-label {
+        font-size: 0.72rem;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-bottom: 4px;
+      }
+
+      .float-card-value {
+        font-family: "Barlow Condensed", sans-serif;
+        font-size: 1.6rem;
+        font-weight: 900;
+        color: var(--orange);
+      }
+
+      .float-card-sub {
+        font-size: 0.78rem;
+        color: rgba(240, 240, 240, 0.5);
+        margin-top: 2px;
+      }
+
+      .tags-row {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .tag-pill {
+        padding: 8px 20px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 999px;
+        font-size: 0.85rem;
+        color: rgba(240, 240, 240, 0.7);
+        white-space: nowrap;
+        transition: all 0.2s;
+        cursor: default;
+      }
+
+      .tag-pill:hover {
+        border-color: var(--orange);
+        color: var(--orange);
+      }
+
+      .features {
+        padding: 100px 60px;
+        background: var(--dark2);
+      }
+
+      .section-label {
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.18em;
+        color: var(--orange);
+        margin-bottom: 14px;
+      }
+
+      .section-title {
+        font-family: "Barlow Condensed", sans-serif;
+        font-size: 3rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        line-height: 1.05;
+        margin-bottom: 60px;
+        max-width: 500px;
+      }
+
+      .features-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 24px;
+      }
+
+      .feature-card {
+        background: var(--dark3);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 16px;
+        padding: 32px;
+        transition: all 0.2s;
+      }
+
+      .feature-card:hover {
+        border-color: rgba(255, 77, 0, 0.3);
+        transform: translateY(-4px);
+      }
+
+      .feature-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        background: rgba(255, 77, 0, 0.12);
+        border: 1px solid rgba(255, 77, 0, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 20px;
+      }
+
+      .feature-title {
+        font-family: "Barlow Condensed", sans-serif;
+        font-size: 1.3rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+      }
+
+      .feature-desc {
+        font-size: 0.88rem;
+        color: rgba(240, 240, 240, 0.55);
+        line-height: 1.65;
+      }
+
+      .cta-section {
+        padding: 100px 60px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .cta-section::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          ellipse 70% 60% at 50% 50%,
+          rgba(255, 77, 0, 0.1),
+          transparent 70%
+        );
+        pointer-events: none;
+      }
+
+      .cta-section h2 {
+        font-family: "Barlow Condensed", sans-serif;
+        font-size: 4rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        margin-bottom: 20px;
+        position: relative;
+      }
+
+      .cta-section p {
+        color: rgba(240, 240, 240, 0.6);
+        font-size: 1.1rem;
+        max-width: 500px;
+        margin: 0 auto 40px;
+        position: relative;
+      }
+
+      footer {
+        padding: 30px 60px;
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.82rem;
+        color: var(--muted);
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <a href="#" class="nav-logo"> <span class="bolt">⚡</span> GymPro </a>
+      <ul class="nav-links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#classes">Classes</a></li>
+        <li><a href="#plans">Plans</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+      <div class="nav-cta">
+        <a th:href="@{/dashboard}" class="btn-nav btn-outline">Dashboard →</a>
+        <a th:href="@{/members/register}" class="btn-nav btn-orange"
+          >Join Now</a
+        >
+      </div>
+    </nav>
+
+    <section class="hero">
+      <div class="hero-bg"></div>
+
+      <div class="hero-left">
+        <div class="hero-tag">Elite Fitness Management</div>
+
+        <h1>
+          Push Your
+          <span class="highlight">Limits</span>
+          With Us
+        </h1>
+
+        <p>
+          From beginner to advanced, experience workouts designed to help you
+          achieve peak performance and exceed your fitness goals.
+        </p>
+
+        <div class="hero-actions">
+          <a th:href="@{/members/register}" class="btn-hero-primary">
+            Join Now <span class="arrow">»</span>
+          </a>
+          <a th:href="@{/classes}" class="btn-hero-secondary">
+            <div class="play-icon">▶</div>
+            View Classes
+          </a>
+        </div>
+
+        <div class="hero-stats">
+          <div class="stat-item">
+            <div class="stat-num" th:text="${totalMembers + '+'}">500+</div>
+            <div class="stat-lbl">Active Members</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-num" th:text="${totalClasses + '+'}">20+</div>
+            <div class="stat-lbl">Weekly Classes</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-num">4<span>★</span></div>
+            <div class="stat-lbl">Member Rating</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-right">
+        <div class="hero-image-wrapper">
+          <div class="hero-circle">
+            <img
+              src="https://i.pinimg.com/736x/21/b2/0e/21b20e5f6832c5856a6a67b64cbaf6bf.jpg"
+              style="
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                object-position: center top;
+                position: relative;
+                z-index: 1;
+              "
+            />
+          </div>
+          <div class="float-card float-card-1">
+            <div class="float-card-label">Today's Visits</div>
+            <div class="float-card-value" th:text="${todayVisits}">12</div>
+            <div class="float-card-sub">Members checked in</div>
+          </div>
+          <div class="float-card float-card-2">
+            <div class="float-card-label">Active Plans</div>
+            <div class="float-card-value" th:text="${activeSubscriptions}">
+              48
+            </div>
+            <div class="float-card-sub">Subscriptions running</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tags-row">
+        <div class="tag-pill">Personal Training</div>
+        <div class="tag-pill">Strength</div>
+        <div class="tag-pill">Group Classes</div>
+        <div class="tag-pill">Cardio</div>
+        <div class="tag-pill">Functional Workouts</div>
+      </div>
+    </section>
+
+    <section class="features" id="features">
+      <div class="section-label">Why Choose Us</div>
+      <div class="section-title">Everything You Need To Manage Your Gym</div>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">👥</div>
+          <div class="feature-title">Member Management</div>
+          <div class="feature-desc">
+            Register, update, and track all your members in one place.
+            Auto-generate unique member IDs and keep full profile history.
+          </div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🎫</div>
+          <div class="feature-title">Membership Plans</div>
+          <div class="feature-desc">
+            Create monthly, quarterly, and yearly plans. Assign and renew
+            subscriptions with automatic expiration tracking.
+          </div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🏃</div>
+          <div class="feature-title">Class Booking</div>
+          <div class="feature-desc">
+            Schedule classes, manage capacity, and let members book spots
+            instantly. View participant lists at any time.
+          </div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">✅</div>
+          <div class="feature-title">Attendance Tracking</div>
+          <div class="feature-desc">
+            Mark daily gym visits with time stamps. Browse attendance history by
+            member or by date with easy navigation.
+          </div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📊</div>
+          <div class="feature-title">Live Dashboard</div>
+          <div class="feature-desc">
+            See real-time stats — total members, active subscriptions, today's
+            visits, and upcoming classes all in one view.
+          </div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">⏰</div>
+          <div class="feature-title">Auto Expiration</div>
+          <div class="feature-desc">
+            The system automatically marks subscriptions as expired every night
+            and updates member status without any manual work.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta-section">
+      <h2>Ready To Get Started?</h2>
+      <p>
+        Access the full gym management dashboard and take control of your gym
+        operations today.
+      </p>
+      <div style="display: flex; gap: 16px; justify-content: center">
+        <a
+          th:href="@{/dashboard}"
+          class="btn-hero-primary"
+          style="text-decoration: none"
+        >
+          Go to Dashboard <span class="arrow">»</span>
+        </a>
+        <a
+          th:href="@{/members/register}"
+          class="btn-nav btn-outline"
+          style="padding: 16px 32px; border-radius: 999px; font-size: 1rem"
+        >
+          Register Member
+        </a>
+      </div>
+    </section>
+
+    <footer>
+      <div>© 2025 GymPro Management System. All rights reserved.</div>
+      <div style="display: flex; gap: 24px">
+        <a th:href="@{/dashboard}" style="color: inherit; text-decoration: none"
+          >Dashboard</a
+        >
+        <a
+          th:href="@{/members/search}"
+          style="color: inherit; text-decoration: none"
+          >Members</a
+        >
+        <a th:href="@{/classes}" style="color: inherit; text-decoration: none"
+          >Classes</a
+        >
+        <a
+          th:href="@{/attendance/mark}"
+          style="color: inherit; text-decoration: none"
+          >Attendance</a
+        >
+      </div>
+    </footer>
+  </body>
+</html>
