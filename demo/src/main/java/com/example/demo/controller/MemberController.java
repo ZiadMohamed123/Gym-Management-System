@@ -5,6 +5,8 @@ import com.example.demo.dto.MemberUpdateDto;
 import com.example.demo.model.Member;
 import com.example.demo.model.enums.AccountStatus;
 import com.example.demo.service.AttendanceService;
+import com.example.demo.service.BookingService;
+import com.example.demo.service.GymClassService;
 import com.example.demo.service.MemberService;
 import com.example.demo.service.SubscriptionService;
 import jakarta.validation.Valid;
@@ -23,6 +25,8 @@ public class MemberController {
     private final MemberService memberService;
     private final SubscriptionService subscriptionService;
     private final AttendanceService attendanceService;
+    private final GymClassService gymClassService;
+    private final BookingService bookingService;
 
     // ---- Register ----
     @GetMapping("/register")
@@ -68,7 +72,31 @@ public class MemberController {
                 subscriptionService.findActiveByMemberId(id).orElse(null));
         model.addAttribute("allSubscriptions", subscriptionService.findByMemberId(id));
         model.addAttribute("attendanceRecords", attendanceService.findByMemberId(id));
+        model.addAttribute("availableClasses", gymClassService.findUpcoming());
+        model.addAttribute("memberBookings", bookingService.getMemberBookings(id));
         return "members/profile";
+    }
+
+    @PostMapping("/profile/{id}/book")
+    public String bookClassFromProfile(@PathVariable Long id,
+                                       @RequestParam Long classId,
+                                       RedirectAttributes redirectAttributes) {
+        try {
+            bookingService.bookClass(classId, id);
+            redirectAttributes.addFlashAttribute("successMessage", "Class booked successfully!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/members/profile/" + id;
+    }
+
+    @PostMapping("/profile/{memberId}/booking/cancel/{bookingId}")
+    public String cancelBookingFromProfile(@PathVariable Long memberId,
+                                           @PathVariable Long bookingId,
+                                           RedirectAttributes redirectAttributes) {
+        bookingService.cancelBooking(bookingId);
+        redirectAttributes.addFlashAttribute("successMessage", "Booking cancelled.");
+        return "redirect:/members/profile/" + memberId;
     }
 
     // ---- Update ----

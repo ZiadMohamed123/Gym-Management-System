@@ -148,6 +148,55 @@
 
         </div>
 
+        <!-- Class Booking -->
+        <div class="card" style="margin-top:20px;">
+            <div class="card-header">
+                <div class="card-title">🏃 Assign Class</div>
+            </div>
+            <div class="card-body">
+                <div th:if="${#lists.isEmpty(availableClasses)}" class="empty-state" style="padding:20px 0;">
+                    <div class="empty-icon">🏃</div>
+                    <h3>No Upcoming Classes</h3>
+                    <p style="margin-top:6px;">Create a class first, then assign it to this member.</p>
+                    <a th:href="@{/classes/create}" class="btn btn-primary" style="margin-top:14px;">Create Class</a>
+                </div>
+
+                <form th:if="${!#lists.isEmpty(availableClasses)}"
+                      th:action="@{/members/profile/{id}/book(id=${member.id})}"
+                      method="post"
+                      style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+                    <div class="form-group" style="flex:1;min-width:240px;margin:0;">
+                        <label>Select Class</label>
+                        <select name="classId" required>
+                            <option value="">— Class —</option>
+                            <option th:each="c : ${availableClasses}"
+                                    th:value="${c.id}"
+                                    th:text="${c.name} + ' (' + ${#temporals.format(c.scheduleDateTime,'MMM d HH:mm')} + ')'">
+                            </option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-success">🎫 Book</button>
+                </form>
+
+                <div th:if="${!#lists.isEmpty(memberBookings)}" style="margin-top:20px;">
+                    <div style="font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted);margin-bottom:10px;">Current Bookings</div>
+                    <div th:each="b : ${memberBookings}"
+                         style="padding:10px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-size:.85rem;">
+                        <div>
+                            <div style="font-weight:600;" th:text="${b.gymClass.name}"></div>
+                            <div style="color:var(--text-muted);font-size:.78rem;"
+                                 th:text="${#temporals.format(b.gymClass.scheduleDateTime,'MMM d, yyyy HH:mm')}"></div>
+                        </div>
+                        <form th:action="@{/members/profile/{memberId}/booking/cancel/{bookingId}(memberId=${member.id}, bookingId=${b.id})}"
+                              method="post"
+                              onsubmit="return confirm('Cancel this booking?')">
+                            <button type="submit" class="btn btn-danger btn-sm">Cancel</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Attendance Records -->
         <div class="card">
             <div class="card-header">
