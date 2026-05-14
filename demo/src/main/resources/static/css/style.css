@@ -158,6 +158,10 @@ body {
     flex-direction: column;
 }
 
+.main-content.no-sidebar {
+    margin-left: 0;
+}
+
 .topbar {
     background: var(--bg-dark);
     border-bottom: 1px solid var(--border);

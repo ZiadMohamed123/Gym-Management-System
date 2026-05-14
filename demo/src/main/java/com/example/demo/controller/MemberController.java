@@ -11,6 +11,8 @@ import com.example.demo.service.MemberService;
 import com.example.demo.service.SubscriptionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -64,7 +66,15 @@ public class MemberController {
 
     // ---- Profile ----
     @GetMapping("/profile/{id}")
-    public String profile(@PathVariable Long id, Model model) {
+    public String profile(@PathVariable Long id, Model model, Authentication authentication) {
+        if (hasRole(authentication, "ROLE_MEMBER")) {
+            Long currentMemberId = memberService.findByEmail(authentication.getName())
+                    .map(Member::getId)
+                    .orElseThrow(() -> new IllegalArgumentException("Member account not found"));
+            if (!currentMemberId.equals(id)) {
+                return "redirect:/members/profile/" + currentMemberId;
+            }
+        }
         Member member = memberService.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Member not found: " + id));
         model.addAttribute("member", member);
@@ -77,10 +87,25 @@ public class MemberController {
         return "members/profile";
     }
 
+    @GetMapping("/profile/me")
+    public String myProfile(Authentication authentication) {
+        Long memberId = memberService.findByEmail(authentication.getName())
+                .map(Member::getId)
+                .orElseThrow(() -> new IllegalArgumentException("Member account not found"));
+        return "redirect:/members/profile/" + memberId;
+    }
+
     @PostMapping("/profile/{id}/book")
     public String bookClassFromProfile(@PathVariable Long id,
                                        @RequestParam Long classId,
-                                       RedirectAttributes redirectAttributes) {
+                                       RedirectAttributes redirectAttributes,
+                                       Authentication authentication) {
+        if (hasRole(authentication, "ROLE_MEMBER")) {
+            Long currentMemberId = memberService.findByEmail(authentication.getName())
+                    .map(Member::getId)
+                    .orElseThrow(() -> new IllegalArgumentException("Member account not found"));
+            id = currentMemberId;
+        }
         try {
             bookingService.bookClass(classId, id);
             redirectAttributes.addFlashAttribute("successMessage", "Class booked successfully!");
@@ -93,10 +118,29 @@ public class MemberController {
     @PostMapping("/profile/{memberId}/booking/cancel/{bookingId}")
     public String cancelBookingFromProfile(@PathVariable Long memberId,
                                            @PathVariable Long bookingId,
-                                           RedirectAttributes redirectAttributes) {
+                                           RedirectAttributes redirectAttributes,
+                                           Authentication authentication) {
+        if (hasRole(authentication, "ROLE_MEMBER")) {
+            Long currentMemberId = memberService.findByEmail(authentication.getName())
+                    .map(Member::getId)
+                    .orElseThrow(() -> new IllegalArgumentException("Member account not found"));
+            memberId = currentMemberId;
+        }
         bookingService.cancelBooking(bookingId);
         redirectAttributes.addFlashAttribute("successMessage", "Booking cancelled.");
         return "redirect:/members/profile/" + memberId;
+    }
+
+    private boolean hasRole(Authentication authentication, String role) {
+        if (authentication == null) {
+            return false;
+        }
+        for (GrantedAuthority authority : authentication.getAuthorities()) {
+            if (authority.getAuthority().equals(role)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // ---- Update ----

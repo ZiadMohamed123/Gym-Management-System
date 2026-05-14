@@ -5,7 +5,7 @@
 
 <div th:replace="~{fragments/layout :: sidebar('home')}"></div>
 
-<div class="main-content">
+<div class="main-content" th:classappend="${#authorization.expression('hasRole(''ADMIN'')')} ? '' : 'no-sidebar'">
     <div class="topbar">
         <div class="topbar-title">📊 Dashboard</div>
         <div class="topbar-actions">

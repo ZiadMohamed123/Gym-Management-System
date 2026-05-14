@@ -72,6 +72,12 @@ public class GymClassServiceImpl implements GymClassService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<GymClass> findByCreator(String createdBy) {
+        return gymClassRepository.findByCreatedBy(createdBy);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public long countTotal() {
         return gymClassRepository.count();
     }

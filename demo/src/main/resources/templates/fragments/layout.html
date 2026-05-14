@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
   <head th:fragment="head(title)">
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -12,7 +12,7 @@
   </head>
 
   <!-- SIDEBAR fragment -->
-  <nav th:fragment="sidebar(active)" class="sidebar">
+  <nav th:fragment="sidebar(active)" class="sidebar" sec:authorize="hasRole('ADMIN')">
     <div class="sidebar-brand">
       <span class="brand-icon">🏋️</span>
       <h1>GYM<span>PRO</span></h1>
@@ -25,6 +25,7 @@
         th:href="@{/dashboard}"
         class="nav-item"
         th:classappend="${active=='home'} ? 'active' : ''"
+        sec:authorize="hasRole('ADMIN')"
       >
         <span class="nav-icon">📊</span>
         <span>Dashboard</span>
@@ -37,6 +38,7 @@
         th:href="@{/members/register}"
         class="nav-item"
         th:classappend="${active=='register'} ? 'active' : ''"
+        sec:authorize="hasRole('ADMIN')"
       >
         <span class="nav-icon">➕</span>
         <span>Register Member</span>
@@ -45,6 +47,7 @@
         th:href="@{/members/search}"
         class="nav-item"
         th:classappend="${active=='search'} ? 'active' : ''"
+        sec:authorize="hasRole('ADMIN')"
       >
         <span class="nav-icon">🔍</span>
         <span>Search Members</span>
@@ -53,9 +56,19 @@
         th:href="@{/members/status}"
         class="nav-item"
         th:classappend="${active=='status'} ? 'active' : ''"
+        sec:authorize="hasAnyRole('ADMIN','TRAINER')"
       >
         <span class="nav-icon">🔖</span>
         <span>Member Status</span>
+      </a>
+      <a
+        th:href="@{/trainers/create}"
+        class="nav-item"
+        th:classappend="${active=='trainers'} ? 'active' : ''"
+        sec:authorize="hasRole('ADMIN')"
+      >
+        <span class="nav-icon">🏋️</span>
+        <span>Create Trainer</span>
       </a>
     </div>
 
@@ -65,6 +78,7 @@
         th:href="@{/memberships/plans}"
         class="nav-item"
         th:classappend="${active=='plans'} ? 'active' : ''"
+        sec:authorize="hasRole('ADMIN')"
       >
         <span class="nav-icon">📋</span>
         <span>Membership Plans</span>
@@ -73,6 +87,7 @@
         th:href="@{/subscriptions/assign}"
         class="nav-item"
         th:classappend="${active=='assign'} ? 'active' : ''"
+        sec:authorize="hasRole('ADMIN')"
       >
         <span class="nav-icon">🎫</span>
         <span>Assign Subscription</span>
@@ -85,6 +100,7 @@
         th:href="@{/classes}"
         class="nav-item"
         th:classappend="${active=='classes'} ? 'active' : ''"
+        sec:authorize="isAuthenticated()"
       >
         <span class="nav-icon">🏃</span>
         <span>All Classes</span>
@@ -93,6 +109,7 @@
         th:href="@{/classes/create}"
         class="nav-item"
         th:classappend="${active=='create-class'} ? 'active' : ''"
+        sec:authorize="hasAnyRole('ADMIN','TRAINER')"
       >
         <span class="nav-icon">📅</span>
         <span>Create Class</span>
@@ -105,6 +122,7 @@
         th:href="@{/attendance/mark}"
         class="nav-item"
         th:classappend="${active=='attendance'} ? 'active' : ''"
+        sec:authorize="hasRole('ADMIN')"
       >
         <span class="nav-icon">✅</span>
         <span>Mark Attendance</span>
@@ -112,7 +130,14 @@
     </div>
 
     <div class="sidebar-footer">
-      <div>GymPro v1.0</div>
+      <div sec:authorize="isAuthenticated()" style="display:flex;flex-direction:column;gap:8px;">
+        <div>Signed in as <span sec:authentication="name"></span></div>
+        <form th:action="@{/logout}" method="post" style="margin:0;">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+          <button type="submit" class="btn btn-secondary btn-sm">Sign out</button>
+        </form>
+      </div>
+      <div style="margin-top: 10px">GymPro v1.0</div>
       <div style="margin-top: 2px">© 2025 All rights reserved</div>
     </div>
   </nav>

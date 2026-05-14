@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Create Trainer')}" ></head>
+<body>
+
+<div th:replace="~{fragments/layout :: sidebar('trainers')}" ></div>
+
+<div class="main-content" th:classappend="${#authorization.expression('hasRole(''ADMIN'')')} ? '' : 'no-sidebar'">
+	<div class="topbar">
+		<div class="topbar-title">🏋️ Create Trainer Account</div>
+	</div>
+
+	<div class="page-body">
+		<div th:replace="~{fragments/layout :: alerts}"></div>
+
+		<div class="card" style="max-width:720px;">
+			<div class="card-header">
+				<div class="card-title">Trainer Credentials</div>
+			</div>
+			<div class="card-body">
+				<form th:action="@{/trainers/create}" th:object="${trainerDto}" method="post">
+					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+					<div class="form-grid">
+						<div class="form-group">
+							<label>Username</label>
+							<input type="text" th:field="*{username}" />
+							<div class="field-error" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></div>
+						</div>
+						<div class="form-group">
+							<label>Password</label>
+							<input type="password" th:field="*{password}" />
+							<div class="field-error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
+						</div>
+						<div class="form-group">
+							<label>Confirm Password</label>
+							<input type="password" th:field="*{confirmPassword}" />
+							<div class="field-error" th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}"></div>
+						</div>
+					</div>
+
+					<div style="display:flex;gap:12px;margin-top:22px;">
+						<button type="submit" class="btn btn-primary btn-lg">Create Trainer</button>
+						<a th:href="@{/dashboard}" class="btn btn-secondary btn-lg">Cancel</a>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Member Home')}"></head>
+<body>
+
+<div class="main-content no-sidebar">
+	<div class="topbar">
+		<div class="topbar-title">👤 Member Home</div>
+		<div class="topbar-actions">
+			<form th:action="@{/logout}" method="post" style="margin:0;">
+				<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+				<button type="submit" class="btn btn-secondary">Sign out</button>
+			</form>
+		</div>
+	</div>
+
+	<div class="page-body">
+		<div class="page-header">
+			<div>
+				<h2 th:text="'Welcome, ' + ${member.fullName}"></h2>
+				<p>View your profile and book classes.</p>
+			</div>
+		</div>
+
+		<div class="card">
+			<div class="card-header">
+				<div class="card-title">Quick Actions</div>
+			</div>
+			<div class="card-body" style="display:flex;gap:12px;flex-wrap:wrap;">
+				<a th:href="@{/members/profile/me}" class="btn btn-secondary">👁 My Profile</a>
+				<a th:href="@{/classes}" class="btn btn-primary">🏃 Book Classes</a>
+			</div>
+		</div>
+
+		<div class="grid-2">
+			<div class="card">
+				<div class="card-header">
+					<div class="card-title">My Bookings</div>
+				</div>
+				<div class="card-body" style="padding:0;">
+					<div th:if="${#lists.isEmpty(memberBookings)}" class="empty-state">
+						<div class="empty-icon">🎫</div>
+						<h3>No Bookings</h3>
+						<p style="margin-top:8px;">Book a class to see it here.</p>
+					</div>
+					<div class="table-wrapper" th:unless="${#lists.isEmpty(memberBookings)}">
+						<table>
+							<thead>
+								<tr>
+									<th>Class</th>
+									<th>Schedule</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr th:each="b : ${memberBookings}">
+									<td th:text="${b.gymClass.name}"></td>
+									<td th:text="${#temporals.format(b.gymClass.scheduleDateTime,'MMM d, yyyy HH:mm')}"></td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+
+			<div class="card">
+				<div class="card-header">
+					<div class="card-title">Upcoming Classes</div>
+				</div>
+				<div class="card-body" style="padding:0;">
+					<div th:if="${#lists.isEmpty(upcomingClasses)}" class="empty-state">
+						<div class="empty-icon">🏃</div>
+						<h3>No Upcoming Classes</h3>
+					</div>
+					<div class="table-wrapper" th:unless="${#lists.isEmpty(upcomingClasses)}">
+						<table>
+							<thead>
+								<tr>
+									<th>Class</th>
+									<th>Schedule</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr th:each="c : ${upcomingClasses}">
+									<td th:text="${c.name}"></td>
+									<td th:text="${#temporals.format(c.scheduleDateTime,'MMM d, yyyy HH:mm')}"></td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+</body>
+</html>

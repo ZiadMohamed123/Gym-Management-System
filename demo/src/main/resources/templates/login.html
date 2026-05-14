@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Sign In — GymPro</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+	<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet" />
+	<style>
+		:root {
+			--orange: #ff4d00;
+			--orange-dim: #cc3d00;
+			--dark: #0d0d0d;
+			--dark2: #161616;
+			--dark3: #1f1f1f;
+			--text: #f0f0f0;
+			--muted: #888;
+			--border: rgba(255, 255, 255, 0.08);
+		}
+
+		* {
+			box-sizing: border-box;
+		}
+
+		body {
+			margin: 0;
+			font-family: "Barlow", sans-serif;
+			background: radial-gradient(circle at 20% 20%, rgba(255, 77, 0, 0.15), transparent 50%),
+				linear-gradient(180deg, var(--dark) 0%, var(--dark2) 100%);
+			color: var(--text);
+			min-height: 100vh;
+			display: grid;
+			place-items: center;
+			padding: 40px 16px;
+		}
+
+		.login-card {
+			width: min(520px, 100%);
+			background: rgba(22, 22, 22, 0.95);
+			border: 1px solid var(--border);
+			border-radius: 18px;
+			padding: 32px;
+			box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+		}
+
+		.brand {
+			font-family: "Barlow Condensed", sans-serif;
+			font-size: 2rem;
+			font-weight: 900;
+			text-transform: uppercase;
+			letter-spacing: 0.06em;
+			margin-bottom: 6px;
+		}
+
+		.brand span {
+			color: var(--orange);
+		}
+
+		.subtitle {
+			color: rgba(240, 240, 240, 0.6);
+			margin-bottom: 26px;
+			font-size: 0.95rem;
+		}
+
+		.form-group {
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+			margin-bottom: 16px;
+		}
+
+		label {
+			font-size: 0.85rem;
+			color: rgba(240, 240, 240, 0.75);
+		}
+
+		input {
+			background: var(--dark3);
+			border: 1px solid var(--border);
+			border-radius: 10px;
+			padding: 12px 14px;
+			color: var(--text);
+			font-size: 0.95rem;
+			outline: none;
+		}
+
+		input:focus {
+			border-color: var(--orange);
+			box-shadow: 0 0 0 3px rgba(255, 77, 0, 0.15);
+		}
+
+		.btn-primary {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			gap: 10px;
+			width: 100%;
+			padding: 12px 16px;
+			background: var(--orange);
+			border: none;
+			border-radius: 10px;
+			color: #fff;
+			font-weight: 700;
+			cursor: pointer;
+			transition: all 0.2s;
+		}
+
+		.btn-primary:hover {
+			background: var(--orange-dim);
+			transform: translateY(-1px);
+		}
+
+		.demo-accounts {
+			margin-top: 24px;
+			padding: 16px;
+			background: rgba(13, 13, 13, 0.7);
+			border-radius: 12px;
+			border: 1px dashed var(--border);
+			font-size: 0.85rem;
+			line-height: 1.6;
+		}
+
+		.demo-accounts strong {
+			color: var(--orange);
+		}
+
+		.alert {
+			margin-bottom: 16px;
+			padding: 10px 12px;
+			border-radius: 10px;
+			background: rgba(255, 77, 0, 0.1);
+			border: 1px solid rgba(255, 77, 0, 0.3);
+			font-size: 0.85rem;
+		}
+	</style>
+</head>
+<body>
+	<div class="login-card">
+		<div class="brand">Gym<span>Pro</span> Login</div>
+		<div class="subtitle">Sign in as admin, trainer, or member.</div>
+
+		<div th:if="${param.error}" class="alert">Invalid username or password.</div>
+		<div th:if="${param.logout}" class="alert">You have been logged out.</div>
+		<div th:if="${param.registered}" class="alert">Account created. Please sign in.</div>
+
+		<form th:action="@{/login}" method="post">
+			<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+			<div class="form-group">
+				<label for="username">Email</label>
+				<input id="username" name="username" type="text" autocomplete="username" required />
+			</div>
+			<div class="form-group">
+				<label for="password">Password</label>
+				<input id="password" name="password" type="password" autocomplete="current-password" required />
+			</div>
+			<button type="submit" class="btn-primary">Sign In</button>
+		</form>
+	</div>
+
+	<script th:inline="javascript">
+		const roleParam = /*[[${param.role}]]*/ [];
+		const role = Array.isArray(roleParam) ? roleParam[0] : roleParam;
+		const username = document.getElementById("username");
+		const password = document.getElementById("password");
+		if (role === "admin") {
+			username.value = "admin";
+			password.value = "admin123";
+		} else if (role === "trainer") {
+			username.value = "trainer";
+			password.value = "trainer123";
+		} else if (role === "member") {
+			username.value = "john.smith@email.com";
+			password.value = "member123";
+		}
+	</script>
+</body>
+</html>

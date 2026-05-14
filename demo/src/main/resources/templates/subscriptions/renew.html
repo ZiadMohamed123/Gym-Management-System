@@ -5,7 +5,7 @@
 
 <div th:replace="~{fragments/layout :: sidebar('assign')}"></div>
 
-<div class="main-content">
+<div class="main-content" th:classappend="${#authorization.expression('hasRole(''ADMIN'')')} ? '' : 'no-sidebar'">
     <div class="topbar">
         <div class="topbar-title">🔄 Renew Subscription</div>
         <div class="topbar-actions">
@@ -36,6 +36,7 @@
             </div>
             <div class="card-body">
                 <form th:action="@{/subscriptions/renew}" th:object="${subscriptionDto}" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                     <input type="hidden" th:field="*{memberId}"/>
 
                     <div class="form-grid">

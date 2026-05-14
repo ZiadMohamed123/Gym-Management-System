@@ -2,11 +2,15 @@ package com.example.demo.controller;
 
 import com.example.demo.dto.GymClassDto;
 import com.example.demo.model.GymClass;
+import com.example.demo.model.Member;
 import com.example.demo.service.BookingService;
 import com.example.demo.service.GymClassService;
 import com.example.demo.service.MemberService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -23,15 +27,34 @@ public class GymClassController {
     private final MemberService memberService;
 
     @GetMapping
-    public String listClasses(Model model) {
+    public String listClasses(Model model, Authentication authentication) {
         model.addAttribute("classes", gymClassService.findAll());
-        model.addAttribute("members", memberService.findAll());
+        if (authentication != null) {
+            model.addAttribute("currentUsername", authentication.getName());
+        }
+        if (hasRole(authentication, "ROLE_ADMIN") || hasRole(authentication, "ROLE_TRAINER")) {
+            model.addAttribute("members", memberService.findAll());
+        }
+        if (hasRole(authentication, "ROLE_MEMBER")) {
+            Member currentMember = memberService.findByEmail(authentication.getName()).orElse(null);
+            if (currentMember != null) {
+                model.addAttribute("currentMemberId", currentMember.getId());
+                model.addAttribute("bookedClassIds",
+                        bookingService.getMemberBookings(currentMember.getId()).stream()
+                                .map(booking -> booking.getGymClass().getId())
+                                .toList());
+            }
+        }
         return "classes/list";
     }
 
     @GetMapping("/create")
-    public String showCreateForm(Model model) {
-        model.addAttribute("classDto", new GymClassDto());
+    public String showCreateForm(Model model, Authentication authentication) {
+        GymClassDto dto = new GymClassDto();
+        if (hasRole(authentication, "ROLE_TRAINER")) {
+            dto.setCreatedBy(authentication.getName());
+        }
+        model.addAttribute("classDto", dto);
         return "classes/create";
     }
 
@@ -39,7 +62,14 @@ public class GymClassController {
     public String createClass(@Valid @ModelAttribute("classDto") GymClassDto dto,
                               BindingResult result,
                               RedirectAttributes redirectAttributes,
-                              Model model) {
+                              Model model,
+                              Authentication authentication) {
+        if (hasRole(authentication, "ROLE_TRAINER")) {
+            dto.setCreatedBy(authentication.getName());
+        }
+        if (dto.getCreatedBy() == null || dto.getCreatedBy().isBlank()) {
+            dto.setCreatedBy(authentication.getName());
+        }
         if (result.hasErrors()) {
             return "classes/create";
         }
@@ -49,9 +79,15 @@ public class GymClassController {
     }
 
     @GetMapping("/update/{id}")
-    public String showUpdateForm(@PathVariable Long id, Model model) {
+    public String showUpdateForm(@PathVariable Long id, Model model, Authentication authentication,
+                                 RedirectAttributes redirectAttributes) {
         GymClass gymClass = gymClassService.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Class not found"));
+        if (hasRole(authentication, "ROLE_TRAINER")
+                && !gymClass.getCreatedBy().equals(authentication.getName())) {
+            redirectAttributes.addFlashAttribute("errorMessage", "You can only edit your own classes.");
+            return "redirect:/classes";
+        }
         GymClassDto dto = new GymClassDto();
         dto.setId(gymClass.getId());
         dto.setName(gymClass.getName());
@@ -66,7 +102,16 @@ public class GymClassController {
     @PostMapping("/update")
     public String updateClass(@Valid @ModelAttribute("classDto") GymClassDto dto,
                               BindingResult result,
-                              RedirectAttributes redirectAttributes) {
+                              RedirectAttributes redirectAttributes,
+                              Authentication authentication) {
+        if (hasRole(authentication, "ROLE_TRAINER")) {
+            GymClass gymClass = gymClassService.findById(dto.getId())
+                    .orElseThrow(() -> new IllegalArgumentException("Class not found"));
+            if (!gymClass.getCreatedBy().equals(authentication.getName())) {
+                throw new AccessDeniedException("You can only update your own classes.");
+            }
+            dto.setCreatedBy(gymClass.getCreatedBy());
+        }
         if (result.hasErrors()) {
             return "classes/update";
         }
@@ -76,16 +121,28 @@ public class GymClassController {
     }
 
     @PostMapping("/cancel/{id}")
-    public String cancelClass(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String cancelClass(@PathVariable Long id, RedirectAttributes redirectAttributes,
+                              Authentication authentication) {
+        if (hasRole(authentication, "ROLE_TRAINER")) {
+            GymClass gymClass = gymClassService.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Class not found"));
+            if (!gymClass.getCreatedBy().equals(authentication.getName())) {
+                throw new AccessDeniedException("You can only cancel your own classes.");
+            }
+        }
         gymClassService.cancel(id);
         redirectAttributes.addFlashAttribute("successMessage", "Class cancelled.");
         return "redirect:/classes";
     }
 
     @GetMapping("/participants/{id}")
-    public String viewParticipants(@PathVariable Long id, Model model) {
+    public String viewParticipants(@PathVariable Long id, Model model, Authentication authentication) {
         GymClass gymClass = gymClassService.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Class not found"));
+        if (hasRole(authentication, "ROLE_TRAINER")
+                && !gymClass.getCreatedBy().equals(authentication.getName())) {
+            throw new AccessDeniedException("You can only view your own classes.");
+        }
         model.addAttribute("gymClass", gymClass);
         model.addAttribute("participants", bookingService.getParticipants(id));
         return "classes/participants";
@@ -93,8 +150,17 @@ public class GymClassController {
 
     @PostMapping("/book")
     public String bookClass(@RequestParam Long classId,
-                            @RequestParam Long memberId,
-                            RedirectAttributes redirectAttributes) {
+                            @RequestParam(required = false) Long memberId,
+                            RedirectAttributes redirectAttributes,
+                            Authentication authentication) {
+        if (hasRole(authentication, "ROLE_MEMBER")) {
+            memberId = memberService.findByEmail(authentication.getName())
+                    .map(Member::getId)
+                    .orElseThrow(() -> new IllegalArgumentException("Member account not found"));
+        } else if (memberId == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Please select a member to book.");
+            return "redirect:/classes";
+        }
         try {
             bookingService.bookClass(classId, memberId);
             redirectAttributes.addFlashAttribute("successMessage", "Class booked successfully!");
@@ -111,5 +177,17 @@ public class GymClassController {
         bookingService.cancelBooking(bookingId);
         redirectAttributes.addFlashAttribute("successMessage", "Booking cancelled.");
         return "redirect:/classes/participants/" + classId;
+    }
+
+    private boolean hasRole(Authentication authentication, String role) {
+        if (authentication == null) {
+            return false;
+        }
+        for (GrantedAuthority authority : authentication.getAuthorities()) {
+            if (authority.getAuthority().equals(role)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

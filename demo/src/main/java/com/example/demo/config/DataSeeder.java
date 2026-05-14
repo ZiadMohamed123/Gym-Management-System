@@ -1,14 +1,17 @@
 package com.example.demo.config;
 
 import com.example.demo.dto.*;
+import com.example.demo.model.AppUser;
 import com.example.demo.model.GymClass;
 import com.example.demo.model.Member;
 import com.example.demo.model.MembershipPlan;
 import com.example.demo.model.enums.*;
+import com.example.demo.repository.AppUserRepository;
 import com.example.demo.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -25,10 +28,32 @@ public class DataSeeder implements CommandLineRunner {
     private final SubscriptionService subscriptionService;
     private final GymClassService gymClassService;
     private final AttendanceService attendanceService;
+    private final AppUserRepository appUserRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public void run(String... args) throws Exception {
         log.info("Seeding initial data...");
+
+        if (!appUserRepository.existsByUsername("admin")) {
+            AppUser admin = AppUser.builder()
+                .username("admin")
+                .password(passwordEncoder.encode("admin123"))
+                .role(UserRole.ADMIN)
+                .enabled(true)
+                .build();
+            appUserRepository.save(admin);
+        }
+
+        if (!appUserRepository.existsByUsername("trainer")) {
+            AppUser trainer = AppUser.builder()
+                .username("trainer")
+                .password(passwordEncoder.encode("trainer123"))
+                .role(UserRole.TRAINER)
+                .enabled(true)
+                .build();
+            appUserRepository.save(trainer);
+        }
 
         // ---- Membership Plans ----
         MembershipPlanDto monthly = new MembershipPlanDto();
@@ -116,7 +141,7 @@ public class DataSeeder implements CommandLineRunner {
         c1.setDescription("Start your day with peaceful yoga stretches and breathing exercises.");
         c1.setScheduleDateTime(LocalDateTime.now().plusDays(1).withHour(7).withMinute(0));
         c1.setMaxCapacity(20);
-        c1.setCreatedBy("Trainer Maya");
+        c1.setCreatedBy("trainer");
         gymClassService.create(c1);
 
         GymClassDto c2 = new GymClassDto();
@@ -124,7 +149,7 @@ public class DataSeeder implements CommandLineRunner {
         c2.setDescription("High-intensity interval training to burn fat and build endurance.");
         c2.setScheduleDateTime(LocalDateTime.now().plusDays(2).withHour(18).withMinute(0));
         c2.setMaxCapacity(15);
-        c2.setCreatedBy("Trainer Carlos");
+        c2.setCreatedBy("trainer");
         gymClassService.create(c2);
 
         GymClassDto c3 = new GymClassDto();
@@ -132,7 +157,7 @@ public class DataSeeder implements CommandLineRunner {
         c3.setDescription("Build muscle strength through compound lifts and resistance training.");
         c3.setScheduleDateTime(LocalDateTime.now().plusDays(3).withHour(10).withMinute(30));
         c3.setMaxCapacity(10);
-        c3.setCreatedBy("Trainer Mike");
+        c3.setCreatedBy("trainer");
         gymClassService.create(c3);
 
         GymClassDto c4 = new GymClassDto();
@@ -140,7 +165,7 @@ public class DataSeeder implements CommandLineRunner {
         c4.setDescription("Fun and energetic dance workout combining Latin music and fitness.");
         c4.setScheduleDateTime(LocalDateTime.now().plusDays(4).withHour(16).withMinute(0));
         c4.setMaxCapacity(25);
-        c4.setCreatedBy("Trainer Sofia");
+        c4.setCreatedBy("trainer");
         gymClassService.create(c4);
 
         // ---- Attendance ----

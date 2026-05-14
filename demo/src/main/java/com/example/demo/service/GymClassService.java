@@ -13,5 +13,6 @@ public interface GymClassService {
     Optional<GymClass> findById(Long id);
     List<GymClass> findAll();
     List<GymClass> findUpcoming();
+    List<GymClass> findByCreator(String createdBy);
     long countTotal();
 }

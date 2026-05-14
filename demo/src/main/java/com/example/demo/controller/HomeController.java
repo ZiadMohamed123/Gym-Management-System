@@ -3,8 +3,11 @@ package com.example.demo.controller;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.security.core.Authentication;
 
+import com.example.demo.model.Member;
 import com.example.demo.service.AttendanceService;
+import com.example.demo.service.BookingService;
 import com.example.demo.service.GymClassService;
 import com.example.demo.service.MemberService;
 import com.example.demo.service.SubscriptionService;
@@ -19,6 +22,7 @@ public class HomeController {
     private final SubscriptionService subscriptionService;
     private final GymClassService gymClassService;
     private final AttendanceService attendanceService;
+    private final BookingService bookingService;
 
     @GetMapping("/")
     public String landing(Model model) {
@@ -41,5 +45,23 @@ public class HomeController {
         model.addAttribute("upcomingClasses", gymClassService.findUpcoming()
                 .stream().limit(4).toList());
         return "index";
+    }
+
+    @GetMapping("/trainer/home")
+    public String trainerHome(Authentication authentication, Model model) {
+        String username = authentication.getName();
+        model.addAttribute("trainerName", username);
+        model.addAttribute("myClasses", gymClassService.findByCreator(username));
+        return "trainer/home";
+    }
+
+    @GetMapping("/member/home")
+    public String memberHome(Authentication authentication, Model model) {
+        Member member = memberService.findByEmail(authentication.getName())
+                .orElseThrow(() -> new IllegalArgumentException("Member account not found"));
+        model.addAttribute("member", member);
+        model.addAttribute("memberBookings", bookingService.getMemberBookings(member.getId()));
+        model.addAttribute("upcomingClasses", gymClassService.findUpcoming());
+        return "member/home";
     }
 }

@@ -1,14 +1,19 @@
 package com.example.demo.service.impl;
 
 import com.example.demo.dto.MemberRegistrationDto;
+import com.example.demo.dto.MemberSignupDto;
 import com.example.demo.dto.MemberUpdateDto;
+import com.example.demo.model.AppUser;
 import com.example.demo.model.Member;
 import com.example.demo.model.MemberStatusHistory;
 import com.example.demo.model.enums.AccountStatus;
+import com.example.demo.model.enums.UserRole;
 import com.example.demo.repository.MemberRepository;
 import com.example.demo.repository.MemberStatusHistoryRepository;
+import com.example.demo.repository.AppUserRepository;
 import com.example.demo.service.MemberService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,34 +29,54 @@ public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
     private final MemberStatusHistoryRepository statusHistoryRepository;
+    private final AppUserRepository appUserRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public Member register(MemberRegistrationDto dto) {
-        if (memberRepository.existsByEmail(dto.getEmail())) {
+        ensureUniqueMember(dto.getEmail(), dto.getPhoneNumber());
+        Member member = createMember(dto.getFullName(), dto.getEmail(), dto.getPhoneNumber(),
+                dto.getDateOfBirth(), dto.getAddress());
+        createMemberAccount(member, "member123");
+        return member;
+    }
+
+    @Override
+    public Member registerSelf(MemberSignupDto dto) {
+        ensureUniqueMember(dto.getEmail(), dto.getPhoneNumber());
+        Member member = createMember(dto.getFullName(), dto.getEmail(), dto.getPhoneNumber(),
+                dto.getDateOfBirth(), dto.getAddress());
+        createMemberAccount(member, dto.getPassword());
+        return member;
+    }
+
+    private void ensureUniqueMember(String email, String phoneNumber) {
+        if (memberRepository.existsByEmail(email)) {
             throw new IllegalArgumentException("A member with this email already exists.");
         }
-        if (memberRepository.existsByPhoneNumber(dto.getPhoneNumber())) {
+        if (memberRepository.existsByPhoneNumber(phoneNumber)) {
             throw new IllegalArgumentException("A member with this phone number already exists.");
         }
+    }
 
+    private Member createMember(String fullName, String email, String phoneNumber,
+                                LocalDate dateOfBirth, String address) {
         Member member = Member.builder()
-                .fullName(dto.getFullName())
-                .email(dto.getEmail())
-                .phoneNumber(dto.getPhoneNumber())
-                .dateOfBirth(dto.getDateOfBirth())
-                .address(dto.getAddress())
+                .fullName(fullName)
+                .email(email)
+                .phoneNumber(phoneNumber)
+                .dateOfBirth(dateOfBirth)
+                .address(address)
                 .accountStatus(AccountStatus.ACTIVE)
                 .registrationDate(LocalDate.now())
                 .build();
 
         member = memberRepository.save(member);
 
-        // Generate unique member ID: GYM-00001
         String memberId = "GYM-" + String.format("%05d", member.getId());
         member.setMemberId(memberId);
         member = memberRepository.save(member);
 
-        // Record initial status history
         MemberStatusHistory history = MemberStatusHistory.builder()
                 .member(member)
                 .oldStatus(null)
@@ -62,6 +87,19 @@ public class MemberServiceImpl implements MemberService {
         statusHistoryRepository.save(history);
 
         return member;
+    }
+
+    private void createMemberAccount(Member member, String rawPassword) {
+        if (!appUserRepository.existsByUsername(member.getEmail())) {
+            AppUser appUser = AppUser.builder()
+                    .username(member.getEmail())
+                    .password(passwordEncoder.encode(rawPassword))
+                    .role(UserRole.MEMBER)
+                    .enabled(true)
+                    .member(member)
+                    .build();
+            appUserRepository.save(appUser);
+        }
     }
 
     @Override

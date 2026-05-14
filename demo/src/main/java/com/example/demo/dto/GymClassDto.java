@@ -28,6 +28,5 @@ public class GymClassDto {
     @Max(value = 500, message = "Capacity cannot exceed 500")
     private Integer maxCapacity;
 
-    @NotBlank(message = "Created by is required")
     private String createdBy;
 }
