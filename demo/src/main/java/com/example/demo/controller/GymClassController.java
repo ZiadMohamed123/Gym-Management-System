@@ -25,10 +25,17 @@ public class GymClassController {
     private final GymClassService gymClassService;
     private final BookingService bookingService;
     private final MemberService memberService;
+    private final com.example.demo.repository.AppUserRepository appUserRepository;
 
     @GetMapping
     public String listClasses(Model model, Authentication authentication) {
-        model.addAttribute("classes", gymClassService.findAll());
+        if (hasRole(authentication, "ROLE_TRAINER")) {
+            model.addAttribute("classes", gymClassService.findAll().stream()
+                    .filter(c -> authentication.getName().equals(c.getCreatedBy()))
+                    .toList());
+        } else {
+            model.addAttribute("classes", gymClassService.findAll());
+        }
         if (authentication != null) {
             model.addAttribute("currentUsername", authentication.getName());
         }
@@ -54,6 +61,9 @@ public class GymClassController {
         if (hasRole(authentication, "ROLE_TRAINER")) {
             dto.setCreatedBy(authentication.getName());
         }
+        if (hasRole(authentication, "ROLE_ADMIN")) {
+            model.addAttribute("trainers", appUserRepository.findByRole(com.example.demo.model.enums.UserRole.TRAINER));
+        }
         model.addAttribute("classDto", dto);
         return "classes/create";
     }
@@ -71,6 +81,9 @@ public class GymClassController {
             dto.setCreatedBy(authentication.getName());
         }
         if (result.hasErrors()) {
+            if (hasRole(authentication, "ROLE_ADMIN")) {
+                model.addAttribute("trainers", appUserRepository.findByRole(com.example.demo.model.enums.UserRole.TRAINER));
+            }
             return "classes/create";
         }
         gymClassService.create(dto);
@@ -95,6 +108,9 @@ public class GymClassController {
         dto.setScheduleDateTime(gymClass.getScheduleDateTime());
         dto.setMaxCapacity(gymClass.getMaxCapacity());
         dto.setCreatedBy(gymClass.getCreatedBy());
+        if (hasRole(authentication, "ROLE_ADMIN")) {
+            model.addAttribute("trainers", appUserRepository.findByRole(com.example.demo.model.enums.UserRole.TRAINER));
+        }
         model.addAttribute("classDto", dto);
         return "classes/update";
     }
@@ -103,6 +119,7 @@ public class GymClassController {
     public String updateClass(@Valid @ModelAttribute("classDto") GymClassDto dto,
                               BindingResult result,
                               RedirectAttributes redirectAttributes,
+                              Model model,
                               Authentication authentication) {
         if (hasRole(authentication, "ROLE_TRAINER")) {
             GymClass gymClass = gymClassService.findById(dto.getId())
@@ -113,6 +130,9 @@ public class GymClassController {
             dto.setCreatedBy(gymClass.getCreatedBy());
         }
         if (result.hasErrors()) {
+            if (hasRole(authentication, "ROLE_ADMIN")) {
+                model.addAttribute("trainers", appUserRepository.findByRole(com.example.demo.model.enums.UserRole.TRAINER));
+            }
             return "classes/update";
         }
         gymClassService.update(dto);

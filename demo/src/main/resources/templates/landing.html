@@ -536,7 +536,7 @@
     <nav>
       <a href="#" class="nav-logo"> <span class="bolt">⚡</span> GymPro </a>
       <div class="nav-cta">
-        <a th:href="@{/login}" class="btn-nav btn-outline">Sign In →</a>
+        <a th:href="@{/login}" class="btn-nav btn-outline">Sign In</a>
         <a th:href="@{/signup}" class="btn-nav btn-orange">Join Now</a>
       </div>
     </nav>
@@ -611,27 +611,7 @@
               "
             />
           </div>
-          <div class="float-card float-card-1">
-            <div class="float-card-label">Today's Visits</div>
-            <div class="float-card-value" th:text="${todayVisits}">12</div>
-            <div class="float-card-sub">Members checked in</div>
-          </div>
-          <div class="float-card float-card-2">
-            <div class="float-card-label">Active Plans</div>
-            <div class="float-card-value" th:text="${activeSubscriptions}">
-              48
-            </div>
-            <div class="float-card-sub">Subscriptions running</div>
-          </div>
         </div>
-      </div>
-
-      <div class="tags-row">
-        <div class="tag-pill">Personal Training</div>
-        <div class="tag-pill">Strength</div>
-        <div class="tag-pill">Group Classes</div>
-        <div class="tag-pill">Cardio</div>
-        <div class="tag-pill">Functional Workouts</div>
       </div>
     </section>
 

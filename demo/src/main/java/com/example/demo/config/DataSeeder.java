@@ -35,6 +35,11 @@ public class DataSeeder implements CommandLineRunner {
     public void run(String... args) throws Exception {
         log.info("Seeding initial data...");
 
+        if (appUserRepository.existsByUsername("admin") && !memberService.findAll().isEmpty()) {
+            log.info("Data already seeded. Skipping seed.");
+            return;
+        }
+
         if (!appUserRepository.existsByUsername("admin")) {
             AppUser admin = AppUser.builder()
                 .username("admin")
