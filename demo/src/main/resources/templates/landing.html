@@ -574,12 +574,6 @@
           <a th:href="@{/member/home}" class="btn-nav btn-outline" sec:authorize="hasRole('MEMBER')">Open Member Home</a>
         </div>
 
-        <div class="hero-actions" style="gap:12px;flex-wrap:wrap;" sec:authorize="isAnonymous()">
-          <a th:href="@{/login(role='admin')}" class="btn-nav btn-outline">Sign in as Admin</a>
-          <a th:href="@{/login(role='trainer')}" class="btn-nav btn-outline">Sign in as Trainer</a>
-          <a th:href="@{/login(role='member')}" class="btn-nav btn-outline">Sign in as Member</a>
-        </div>
-
         <div class="hero-stats">
           <div class="stat-item">
             <div class="stat-num" th:text="${totalMembers + '+'}">500+</div>
