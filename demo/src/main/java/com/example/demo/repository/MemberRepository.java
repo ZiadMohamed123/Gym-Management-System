@@ -31,4 +31,6 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     List<Member> searchByKeyword(@Param("keyword") String keyword);
 
     long countByAccountStatus(AccountStatus status);
+
+    List<Member> findTop5ByOrderByIdDesc();
 }

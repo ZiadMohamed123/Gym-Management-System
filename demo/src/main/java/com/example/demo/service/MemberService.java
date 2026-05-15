@@ -24,6 +24,8 @@ public interface MemberService {
 
     List<Member> findAll();
 
+    List<Member> findRecentMembers();
+
     List<Member> search(String keyword);
 
     void delete(Long id);

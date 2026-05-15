@@ -166,6 +166,12 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<Member> findRecentMembers() {
+        return memberRepository.findTop5ByOrderByIdDesc();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<Member> search(String keyword) {
         if (keyword == null || keyword.isBlank()) {
             return memberRepository.findAll();

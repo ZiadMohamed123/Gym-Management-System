@@ -40,8 +40,7 @@ public class HomeController {
         model.addAttribute("activeSubscriptions", subscriptionService.countActiveSubscriptions());
         model.addAttribute("totalClasses", gymClassService.countTotal());
         model.addAttribute("todayVisits", attendanceService.countTodayVisits());
-        model.addAttribute("recentMembers", memberService.findAll()
-                .stream().limit(5).toList());
+        model.addAttribute("recentMembers", memberService.findRecentMembers());
         model.addAttribute("upcomingClasses", gymClassService.findUpcoming()
                 .stream().limit(4).toList());
         return "index";
